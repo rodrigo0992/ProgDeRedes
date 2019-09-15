@@ -6,15 +6,10 @@ using System.Threading.Tasks;
 
 namespace Entities
 {
-    class Student
+    class Course
     {
-        public int StudentNum { get; set; }
+        public int CourseNum { get; set; }
         public string Name { get; set; }
-        public string SurName { get; set; }
         public List<StudentCourse> StudentCourses { get; set; }
-
-        public Student()
-        {
-        }
     }
 }
