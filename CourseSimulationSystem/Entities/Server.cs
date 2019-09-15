@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Entities
 {
-    class Server
+    public class Server
     {
         public List<StudentSession> StudentSessions { get; set; }
     }
