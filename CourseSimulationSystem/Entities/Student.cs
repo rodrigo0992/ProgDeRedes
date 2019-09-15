@@ -6,9 +6,13 @@ using System.Threading.Tasks;
 
 namespace Entities
 {
-    class Program
+    class Student
     {
-        static void Main(string[] args)
+        public int StudentNum { get; set; }
+        public string Name { get; set; }
+        public string SurName { get; set; }
+
+        public Student()
         {
         }
     }
