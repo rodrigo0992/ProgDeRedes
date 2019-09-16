@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Entities
+namespace Logic
 {
-    public class Server
+    class CourseLogic
     {
-        public List<StudentSession> StudentSessions { get; set; }
     }
 }

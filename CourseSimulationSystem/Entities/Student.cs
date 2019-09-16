@@ -11,6 +11,9 @@ namespace Entities
         public int StudentNum { get; set; }
         public string Name { get; set; }
         public string SurName { get; set; }
+        public string Mail { get; set; }
+        public string Password { get; set; }
+        public bool Logged { get; set; }
         public List<StudentCourse> StudentCourses { get; set; }
 
         public Student()
