@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Logic
 {
-    class StudentLogic
+    public class StudentLogic
     {
         private Information Information { get; set; }
 
@@ -24,9 +24,27 @@ namespace Logic
 
         public Student AddStudent(Student student)
         {
-            this.Information.Students.Add(student);
+            try
+            {
+                this.Information.AddStudent(student);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+            
             return student;
-        }    
+        }  
+        
+        public List<Student> GetStudents()
+        {
+            return this.Information.Students;
+        }
+
+        public Student GetStudentByStudentNum(int number)
+        {
+            return this.Information.GetStudentByStudentNum(number);
+        }
 
     }
 }

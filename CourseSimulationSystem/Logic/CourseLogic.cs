@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Logic
 {
-    class CourseLogic
+    public class CourseLogic
     {
     }
 }
