@@ -43,5 +43,13 @@ namespace Logic
         {
             this.Information.DeleteCourse(courseIndex);
         }
+        public bool existsStudentsAndCourses()
+        {
+            return this.Information.existsStudentsAndCourses();
+        }
+        public void AddStudentToCourse(StudentCourse studentCourse)
+        {
+            this.Information.AddStrudentCourse(studentCourse);
+        }
     }
 }

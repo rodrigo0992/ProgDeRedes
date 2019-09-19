@@ -10,6 +10,5 @@ namespace Entities
     {
         public int CourseNum { get; set; }
         public string Name { get; set; }
-        public List<StudentCourse> StudentCourses { get; set; }
     }
 }
