@@ -11,28 +11,31 @@ namespace DataBase
     {
         public List<Student>  Students { get; set; }
         public List<Course> Courses { get; set; }
+        public List<StudentCourse> StudentCourses { get; set; }
 
         public Information()
         {
             Students = new List<Student>();
             Courses = new List<Course>();
+            StudentCourses = new List<StudentCourse>();
         }
 
         public void AddStudent(Student student)
         {
-
             //if (GetStudentByStudentNum(student.StudentNum) != null)
             //    throw new Exception("El estudiante con " + student.StudentNum + " ya existe en el sistema");
             //if (GetStudentByMail(student.Mail) != null)
-            //   throw new Exception("El estudiante con " + student.Mail + " ya existe en el sistema");
-            
+            //   throw new Exception("El estudiante con " + student.Mail + " ya existe en el sistema");           
             this.Students.Add(student);
-
         }
 
         public void AddCourse(Course course)
         {
             this.Courses.Add(course);
+        }
+        public void AddStrudentCourse(StudentCourse studentCourse)
+        {
+            this.StudentCourses.Add(studentCourse);
         }
         public Student GetStudentByStudentNum(int studentNum)
         {
@@ -53,16 +56,20 @@ namespace DataBase
 
         public void DeleteCourse(int courseNum)
         {
-            bool searching= true;
+            bool searching = true;
             for (int i = Courses.Count - 1; i >= 0 && searching; i--)
             {
                 if (Courses[i].CourseNum == courseNum)
                 {
                     Courses.RemoveAt(i);
-                    searching=false;
+                    searching = false;
                 }
             }
             Console.WriteLine("El curso no existe.");
+        }
+        public bool existsStudentsAndCourses()
+        {
+            return (this.Courses.Count > 0 && this.Students.Count > 0);
         }
     }
 }
