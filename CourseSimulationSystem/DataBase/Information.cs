@@ -30,10 +30,19 @@ namespace DataBase
 
         }
 
+        public void AddCourse(Course course)
+        {
+            this.Courses.Add(course);
+        }
         public Student GetStudentByStudentNum(int studentNum)
         {
             var studentToReturn = this.Students.First(x => x.StudentNum == studentNum);
             return studentToReturn;
+        }
+        public Course GetCourseByCourseNumber(int courseNum)
+        {
+            var courseToReturn = this.Courses.First(x => x.CourseNum == courseNum);
+            return courseToReturn;
         }
 
         public Student GetStudentByMail(string mail)
@@ -42,5 +51,18 @@ namespace DataBase
             return studentToReturn;
         }
 
+        public void DeleteCourse(int courseNum)
+        {
+            bool searching= true;
+            for (int i = Courses.Count - 1; i >= 0 && searching; i--)
+            {
+                if (Courses[i].CourseNum == courseNum)
+                {
+                    Courses.RemoveAt(i);
+                    searching=false;
+                }
+            }
+            Console.WriteLine("El curso no existe.");
+        }
     }
 }
