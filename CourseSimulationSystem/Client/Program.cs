@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Protocol;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -10,12 +11,17 @@ namespace Client
 {
     class Program
     {
+        private static TcpListener tcpListener;
+
         static void Main(string[] args)
         {
 
-            var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse("192.168.1.90"), 0));
-            tcpClient.Connect(IPAddress.Parse("192.168.1.90"), 6000);
+            var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse("172.29.0.238"), 0));
+            tcpClient.Connect(IPAddress.Parse("172.29.0.238"), 6000);
             var networkStream = tcpClient.GetStream();
+
+            tcpListener = new TcpListener(IPAddress.Parse("172.29.0.238"), 0);
+            tcpListener.Start(100);
 
             Console.WriteLine("Bienvenido a Aulas");
             Console.WriteLine("Continue para iniciar sesión");
@@ -31,25 +37,24 @@ namespace Client
         private static void Login(NetworkStream networkStream)
         {
             Console.WriteLine("Ingrese su número de usuario:");
-            var userNum = Console.ReadLine();
+            var studentNum = Console.ReadLine();
             Console.WriteLine("Ingrese su contraseña:");
-            var userPassword = Console.ReadLine();
+            var studentPassword = Console.ReadLine();
 
-            SendMessage(networkStream, userNum);
+            var data = @"{studentNum:'" + studentNum + "', password:'" + studentPassword + "'}";
 
-            SendMessage(networkStream, userPassword);
+            Message.SendMessage(networkStream, "REQ", 01, data);
+
+            var tcpClient = tcpListener.AcceptTcpClient();
+            var networkStreamResponse = tcpClient.GetStream();
+            var protocolPackageResponse = Message.ReceiveMessage(networkStreamResponse);
+
+
+            Console.WriteLine(protocolPackageResponse.Data);
 
         }
 
-        private static void SendMessage(NetworkStream networkStream, string message)
-        {
-            var messageBytes = Encoding.UTF8.GetBytes(message);
-            var messageLength = messageBytes.Length;
-            var messageLengthBytes = BitConverter.GetBytes(messageLength);
 
-            networkStream.Write(messageLengthBytes, 0, messageLengthBytes.Length);
-            networkStream.Write(messageBytes, 0, messageBytes.Length);
-        }
 
     }
 }

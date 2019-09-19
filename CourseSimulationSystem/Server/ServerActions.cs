@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Logic;
 using System.Net.Sockets;
 using Entities;
+using Newtonsoft.Json.Linq;
+using Protocol;
 
 namespace Server
 {
@@ -19,52 +21,24 @@ namespace Server
             this.studentLogic = studentLogic;
         }
 
-        private static void ReadDataFromStream(int length, NetworkStream networkStream, byte[] dataBytes)
+
+
+        public void Login(string data, NetworkStream networkStreamResponse)
         {
-            int totalReceivedData = 0;
-
-            while (totalReceivedData < length)
-            {
-                var received = networkStream.Read(dataBytes, totalReceivedData, length - totalReceivedData);
-                if (received == 0)
-                {
-                    //bum
-                }
-                totalReceivedData += received;
-            }
-
-        }
-
-        private static string ReceiveMessage(NetworkStream networkStream)
-        {
-            var dataLengthBytes = new byte[4];
-            ReadDataFromStream(4, networkStream, dataLengthBytes);
-
-            var dataLength = BitConverter.ToInt32(dataLengthBytes, 0);
-            var dataBytes = new byte[dataLength];
-
-            ReadDataFromStream(dataLength, networkStream, dataBytes);
-
-           return Encoding.UTF8.GetString(dataBytes);
-
-        }
-
-        public void Login(NetworkStream networkStream)
-        {
-            //Student Number
-            var studentNum = ReceiveMessage(networkStream);
+            Console.WriteLine(data);
+            var json = JObject.Parse(data);
+            var studentNum = json["studentNum"].ToString();
+            var password = json["password"].ToString();
 
             var studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
-            //Password
-            var password = ReceiveMessage(networkStream);
 
             if (studentToLogin.Password == password)
             {
-                Console.WriteLine("Pasword correcta");
+                Message.SendMessage(networkStreamResponse,"RES",01, "Pasword correcta");
             }
             else
             {
-                Console.WriteLine("Pasword incorrecta");
+                Message.SendMessage(networkStreamResponse, "RES", 01, "Pasword incorrecta");
             }
                 
         }
