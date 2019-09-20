@@ -16,12 +16,9 @@ namespace Client
         static void Main(string[] args)
         {
 
-            var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse("172.29.0.238"), 0));
-            tcpClient.Connect(IPAddress.Parse("172.29.0.238"), 6000);
+            var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse("192.168.1.44"), 0));
+            tcpClient.Connect(IPAddress.Parse("192.168.1.44"), 6000);
             var networkStream = tcpClient.GetStream();
-
-            tcpListener = new TcpListener(IPAddress.Parse("172.29.0.238"), 0);
-            tcpListener.Start(100);
 
             Console.WriteLine("Bienvenido a Aulas");
             Console.WriteLine("Continue para iniciar sesión");
@@ -45,10 +42,7 @@ namespace Client
 
             Message.SendMessage(networkStream, "REQ", 01, data);
 
-            var tcpClient = tcpListener.AcceptTcpClient();
-            var networkStreamResponse = tcpClient.GetStream();
-            var protocolPackageResponse = Message.ReceiveMessage(networkStreamResponse);
-
+            var protocolPackageResponse = Message.ReceiveMessage(networkStream);
 
             Console.WriteLine(protocolPackageResponse.Data);
 

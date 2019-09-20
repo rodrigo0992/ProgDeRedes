@@ -25,7 +25,6 @@ namespace Server
 
         public void Login(string data, NetworkStream networkStreamResponse)
         {
-            Console.WriteLine(data);
             var json = JObject.Parse(data);
             var studentNum = json["studentNum"].ToString();
             var password = json["password"].ToString();

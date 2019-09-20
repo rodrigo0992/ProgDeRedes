@@ -20,7 +20,7 @@ namespace Server
 
         static void Main(string[] args)
         {
-            var tcpListener = new TcpListener(IPAddress.Parse("172.29.0.238"), 6000);
+            var tcpListener = new TcpListener(IPAddress.Parse("192.168.1.44"), 6000);
             tcpListener.Start(100);
 
 
@@ -40,14 +40,10 @@ namespace Server
                         var networkStream = tcpClient.GetStream();
                         var protocolPackage = Message.ReceiveMessage(networkStream);
 
-                        var tcpClientResponse = new TcpClient(new IPEndPoint(IPAddress.Parse("172.29.0.238"), 0));
-                        tcpClientResponse.Connect(IPAddress.Parse("172.29.0.238"), 7000);
-                        var networkStreamResponse = tcpClientResponse.GetStream();
-
                         switch (protocolPackage.Cmd)
                         {
                             case 1:
-                                serverActions.Login(protocolPackage.Data, networkStreamResponse);
+                                serverActions.Login(protocolPackage.Data, networkStream);
                                 break;
                         }
                         
