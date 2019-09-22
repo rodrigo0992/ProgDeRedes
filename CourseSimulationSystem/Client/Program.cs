@@ -15,37 +15,39 @@ namespace Client
 
         static void Main(string[] args)
         {
-
-            var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse("192.168.1.44"), 0));
-            tcpClient.Connect(IPAddress.Parse("192.168.1.44"), 6000);
+            ClientActions clientActions= new ClientActions();
+            var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse("192.168.1.61"), 0));
+            tcpClient.Connect(IPAddress.Parse("192.168.1.61"), 6000);
             var networkStream = tcpClient.GetStream();
 
             Console.WriteLine("Bienvenido a Aulas");
             Console.WriteLine("Continue para iniciar sesión");
             Console.ReadLine();
-
-            Login(networkStream);
+            /*var loggedIn = false;
+            while (!loggedIn)
+            {
+                loggedIn = clientActions.Login(networkStream);
+            }*/
+            Menu(networkStream, clientActions);
 
             networkStream.Close();
             tcpClient.Dispose();
             Console.ReadLine();
         }
 
-        private static void Login(NetworkStream networkStream)
+        private static void Menu(NetworkStream networkStream, ClientActions clientActions)
         {
-            Console.WriteLine("Ingrese su número de usuario:");
-            var studentNum = Console.ReadLine();
-            Console.WriteLine("Ingrese su contraseña:");
-            var studentPassword = Console.ReadLine();
+            Console.WriteLine("Seleccione una opcion:");
+            Console.WriteLine("1- Alta de curso");
+            var opcion = Console.ReadLine();
 
-            var data = @"{studentNum:'" + studentNum + "', password:'" + studentPassword + "'}";
-
-            Message.SendMessage(networkStream, "REQ", 01, data);
-
-            var protocolPackageResponse = Message.ReceiveMessage(networkStream);
-
-            Console.WriteLine(protocolPackageResponse.Data);
-
+            switch (Convert.ToInt32(opcion))
+            {
+                case 1:
+                    clientActions.AddStudentToCourse(networkStream);
+                break;
+                
+            }
         }
 
 

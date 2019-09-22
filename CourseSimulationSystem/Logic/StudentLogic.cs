@@ -41,6 +41,10 @@ namespace Logic
             return this.Information.Students;
         }
 
+        public bool StudentExists(int number)
+        {
+            return this.Information.StudentExists(number);
+        }
         public Student GetStudentByStudentNum(int number)
         {
             return this.Information.GetStudentByStudentNum(number);

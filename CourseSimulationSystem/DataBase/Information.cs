@@ -37,14 +37,33 @@ namespace DataBase
         {
             this.StudentCourses.Add(studentCourse);
         }
+        public bool StudentExists(int studentNum)
+        {
+            try
+            {
+                this.Students.First(x => x.StudentNum == studentNum);
+                return true;
+            }
+            catch(Exception e)
+            {
+                return false;
+            }
+        }
+
         public Student GetStudentByStudentNum(int studentNum)
         {
-            var studentToReturn = this.Students.First(x => x.StudentNum == studentNum);
-            return studentToReturn;
+                var studentToReturn = this.Students.First(x => x.StudentNum == studentNum);
+                return studentToReturn;
         }
+
         public Course GetCourseByCourseNumber(int courseNum)
         {
             var courseToReturn = this.Courses.First(x => x.CourseNum == courseNum);
+            return courseToReturn;
+        }
+        public Course GetCourseByCourseName(string courseName)
+        {
+            var courseToReturn = this.Courses.First(x => x.Name.Equals(courseName));
             return courseToReturn;
         }
 

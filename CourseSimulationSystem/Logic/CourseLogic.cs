@@ -39,6 +39,11 @@ namespace Logic
         {
             return this.Information.GetCourseByCourseNumber(number);
         }
+
+        public Course getCourseByCourseName(string name)
+        {
+            return this.Information.GetCourseByCourseName(name);
+        }
         public void DeleteCourse(int courseIndex)
         {
             this.Information.DeleteCourse(courseIndex);
@@ -50,6 +55,16 @@ namespace Logic
         public void AddStudentToCourse(StudentCourse studentCourse)
         {
             this.Information.AddStrudentCourse(studentCourse);
+        }
+
+        public string prepareCourseListResponse()
+        {
+            string response = "";
+            foreach (Course course in this.Information.Courses)
+            {
+                response += course.Name + "-";
+            }
+            return response;
         }
     }
 }

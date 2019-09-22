@@ -20,7 +20,7 @@ namespace Server
 
         static void Main(string[] args)
         {
-            var tcpListener = new TcpListener(IPAddress.Parse("192.168.1.44"), 6000);
+            var tcpListener = new TcpListener(IPAddress.Parse("192.168.1.61"), 6000);
             tcpListener.Start(100);
 
 
@@ -43,12 +43,16 @@ namespace Server
                         switch (protocolPackage.Cmd)
                         {
                             case 1:
-                                serverActions.Login(protocolPackage.Data, networkStream);
+                                serverActions.Login(protocolPackage.Data, networkStream); //Envio la data que son los datos del login
                                 break;
-                        }
-                        
+                            case 2:
+                                serverActions.ListCoursesRequest(networkStream);
+                                break;
+                            case 3:
+                                serverActions.AddStudentToCourse(protocolPackage.Data, networkStream);
+                                break;
+                        }     
                     }
-
                 });
                 thread.Start();
 

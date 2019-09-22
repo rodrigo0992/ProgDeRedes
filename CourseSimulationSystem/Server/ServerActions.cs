@@ -21,31 +21,60 @@ namespace Server
             this.studentLogic = studentLogic;
         }
 
-
-
+        // Start response server methods
         public void Login(string data, NetworkStream networkStreamResponse)
         {
             var json = JObject.Parse(data);
             var studentNum = json["studentNum"].ToString();
             var password = json["password"].ToString();
-
-            var studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
-
-            if (studentToLogin.Password == password)
+            var studentExists = this.studentLogic.StudentExists(Convert.ToInt32(studentNum));
+            if (!studentExists)
             {
-                Message.SendMessage(networkStreamResponse,"RES",01, "Pasword correcta");
+                Message.SendMessage(networkStreamResponse, "RES", 01, "Estudiante no existe");
             }
             else
             {
-                Message.SendMessage(networkStreamResponse, "RES", 01, "Pasword incorrecta");
+                var studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
+                if (studentToLogin.Password == password)
+                {
+                    Message.SendMessage(networkStreamResponse, "RES", 01, "Password correcta");
+                }
+                else
+                {
+                    Message.SendMessage(networkStreamResponse, "RES", 01, "Password incorrecta");
+                }
             }
                 
         }
 
+        public void ListCoursesRequest(NetworkStream networkStreamResponse)
+        {
+            var courseList = this.courseLogic.prepareCourseListResponse();
+            Message.SendMessage(networkStreamResponse, "RES", 2, courseList);
+        }
+
+
+        public void AddStudentToCourse(string course, NetworkStream networkStreamResponse)
+        {
+            //Provisory user 
+            Student student = new Student();
+            student.Name = "a";
+            student.StudentNum = 1;
+            Course courseToSuscribe = courseLogic.getCourseByCourseName(course);
+            StudentCourse studentCourse = new StudentCourse();
+            studentCourse.Course = courseToSuscribe;
+            studentCourse.Student = student;
+            courseLogic.AddStudentToCourse(studentCourse);
+            Message.SendMessage(networkStreamResponse, "RES", 3, "Curso agregado exitosamente");
+        }
+        //Finish response server methods
+
+        //Start internal server methods
+
         public void AddStudent()
         {
             Console.WriteLine("CREAR USUARIO");
-            var studentNum= setStudentNumber();
+            var studentNum = setStudentNumber();
             Console.WriteLine("Ingrese nombre:");
             var studentName = Console.ReadLine();
             Console.WriteLine("Ingrese password:");
@@ -65,9 +94,8 @@ namespace Server
             {
                 Console.WriteLine(e.Message);
             }
-            
-        }
 
+        }
         private String setStudentNumber()
         {
             var studentNum="";
