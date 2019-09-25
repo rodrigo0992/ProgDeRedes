@@ -22,44 +22,42 @@ namespace Server
         }
 
         // Start response server methods
-        public void Login(string data, NetworkStream networkStreamResponse)
+        public Student Login(string data, NetworkStream networkStreamResponse)
         {
+            var studentToLogin = new Student();
             var json = JObject.Parse(data);
             var studentNum = json["studentNum"].ToString();
             var password = json["password"].ToString();
             var studentExists = this.studentLogic.StudentExists(Convert.ToInt32(studentNum));
             if (!studentExists)
             {
-                Message.SendMessage(networkStreamResponse, "RES", 01, "Estudiante no existe");
+                Message.SendMessage(networkStreamResponse, "RES", 1, "Estudiante no existe");
             }
             else
             {
-                var studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
+                studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
                 if (studentToLogin.Password == password)
                 {
-                    Message.SendMessage(networkStreamResponse, "RES", 01, "Password correcta");
+                    Message.SendMessage(networkStreamResponse, "RES", 1, "Password correcta");
                 }
                 else
                 {
-                    Message.SendMessage(networkStreamResponse, "RES", 01, "Password incorrecta");
+                    Message.SendMessage(networkStreamResponse, "RES", 1, "Password incorrecta");
                 }
             }
+            return studentToLogin;
                 
         }
 
-        public void ListCoursesRequest(NetworkStream networkStreamResponse)
+        public void ListCoursesRequest(Student student,NetworkStream networkStreamResponse)
         {
-            var courseList = this.courseLogic.prepareCourseListResponse();
+            var courseList = this.courseLogic.prepareCourseListResponse(courseLogic.GetAvailablesCourses(student));
             Message.SendMessage(networkStreamResponse, "RES", 2, courseList);
         }
 
 
-        public void AddStudentToCourse(string course, NetworkStream networkStreamResponse)
+        public void AddStudentToCourse(Student student, string course, NetworkStream networkStreamResponse)
         {
-            //Provisory user 
-            Student student = new Student();
-            student.Name = "a";
-            student.StudentNum = 1;
             Course courseToSuscribe = courseLogic.getCourseByCourseName(course);
             StudentCourse studentCourse = new StudentCourse();
             studentCourse.Course = courseToSuscribe;
@@ -67,9 +65,7 @@ namespace Server
             courseLogic.AddStudentToCourse(studentCourse);
             Message.SendMessage(networkStreamResponse, "RES", 3, "Curso agregado exitosamente");
         }
-        //Finish response server methods
 
-        //Start internal server methods
 
         public void AddStudent()
         {
@@ -87,8 +83,7 @@ namespace Server
             {
                 this.studentLogic.AddStudent(newStudent);
                 Console.WriteLine("Usuario creado con éxito");
-                Console.WriteLine("Volver a menú");
-                Console.ReadLine();
+
             }
             catch (Exception e)
             {
@@ -133,8 +128,7 @@ namespace Server
             {
                 this.courseLogic.AddCourse(newCourse);
                 Console.WriteLine("Curso creado con éxito");
-                Console.WriteLine("Volver a menú");
-                Console.ReadLine();
+
             }
             catch (Exception e)
             {
@@ -185,8 +179,7 @@ namespace Server
                 {
                     this.courseLogic.AddStudentToCourse(studentCourse);
                     Console.WriteLine("Usuario " + student.Name + " agregado a curso " + course.Name + " existosamente");
-                    Console.WriteLine("Volver a menú");
-                    Console.ReadLine();
+
                 }
                 catch (Exception e)
                 {
@@ -195,5 +188,56 @@ namespace Server
             }
 
         }
+
+        public void GetEnrolledCourses(Student student,NetworkStream networkStreamResponse)
+        {
+            var enrolledCourses = this.studentLogic.GetEnrolledCourses(student);
+            var courseList = courseLogic.prepareCourseListResponse(enrolledCourses);
+            Message.SendMessage(networkStreamResponse, "RES", 4, courseList);
+        }
+
+
+        public void AddFileToStudentCourse(Student student, string data, NetworkStream networkStreamResponse)
+        {
+            var json = JObject.Parse(data);
+            var nameRecived = json["name"].ToString();
+            var courseRecived = json["course"].ToString();
+            var fileSourceRecived = json["filesource"].ToString();
+
+            Course course = courseLogic.getCourseByCourseName(courseRecived);
+            File file = new File();
+            file.Name = nameRecived;
+            file.FileSource = fileSourceRecived;
+            try
+            {
+                studentLogic.AddStudentCourseFile(student, course, file);
+                Message.SendMessage(networkStreamResponse, "RES", 5, "Archivo agregado exitosamente");
+
+            }
+            catch (Exception e)
+            {
+                Message.SendMessage(networkStreamResponse, "RES", 5, e.Message);
+            }
+
+        }
+
+        public void GetStudentCourseFiles(Student student, string data, NetworkStream networkStreamResponse)
+        {
+            var courseRecived = data;
+            try
+            {
+                Course course = courseLogic.getCourseByCourseName(courseRecived);
+                var files = studentLogic.GetStudentCourseFiles(student, course);
+                var listToResponse = studentLogic.FileListToResponse(files);
+                Message.SendMessage(networkStreamResponse, "RES", 6, listToResponse);
+            }
+            catch (Exception e)
+            {
+                Message.SendMessage(networkStreamResponse, "RES", 6, e.Message);
+            }
+
+        }
     }
+
+
 }

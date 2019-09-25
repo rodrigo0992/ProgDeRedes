@@ -42,8 +42,17 @@ namespace Logic
 
         public Course getCourseByCourseName(string name)
         {
-            return this.Information.GetCourseByCourseName(name);
+            try
+            {
+            return Information.GetCourseByCourseName(name);
+
+            }
+            catch (Exception e)
+            {
+                throw new Exception("No se puedo obtener el curso de nombre: " + name);
+            }
         }
+
         public void DeleteCourse(int courseIndex)
         {
             this.Information.DeleteCourse(courseIndex);
@@ -57,10 +66,24 @@ namespace Logic
             this.Information.AddStrudentCourse(studentCourse);
         }
 
-        public string prepareCourseListResponse()
+        public List<Course> GetAvailablesCourses(Student student)
+        {
+            var studentCourses = Information.GetStudentCourses().Where(x => x.Student == student).ToList();
+            var coursesOfStudent = new List<Course>();
+            foreach (var item in studentCourses)
+            {
+                coursesOfStudent.Add(item.Course);
+            }
+
+            var allCourses = GetCourses();
+
+            return allCourses.Except(coursesOfStudent).ToList();
+        }
+
+        public string prepareCourseListResponse(List<Course> courses)
         {
             string response = "";
-            foreach (Course course in this.Information.Courses)
+            foreach (Course course in courses)
             {
                 response += course.Name + "-";
             }

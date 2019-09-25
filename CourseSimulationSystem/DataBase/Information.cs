@@ -90,5 +90,10 @@ namespace DataBase
         {
             return (this.Courses.Count > 0 && this.Students.Count > 0);
         }
+
+        public List<StudentCourse> GetStudentCourses()
+        {
+            return StudentCourses;
+        }
     }
 }

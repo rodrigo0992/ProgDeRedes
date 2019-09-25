@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
+using Entities;
 
 namespace Server
 {
@@ -20,10 +21,8 @@ namespace Server
 
         static void Main(string[] args)
         {
-            var tcpListener = new TcpListener(IPAddress.Parse("192.168.1.61"), 6000);
+            var tcpListener = new TcpListener(IPAddress.Parse("192.168.1.42"), 6000);
             tcpListener.Start(100);
-
-
 
 
             Information information = new Information();
@@ -37,21 +36,42 @@ namespace Server
                     while (serverRunning)
                     {
                         var tcpClient = tcpListener.AcceptTcpClient();
-                        var networkStream = tcpClient.GetStream();
-                        var protocolPackage = Message.ReceiveMessage(networkStream);
 
-                        switch (protocolPackage.Cmd)
-                        {
-                            case 1:
-                                serverActions.Login(protocolPackage.Data, networkStream); //Envio la data que son los datos del login
-                                break;
-                            case 2:
-                                serverActions.ListCoursesRequest(networkStream);
-                                break;
-                            case 3:
-                                serverActions.AddStudentToCourse(protocolPackage.Data, networkStream);
-                                break;
-                        }     
+                        var threadClient = new Thread(() => {
+
+                            Student studentConected = new Student();
+                            bool clientRunning = true;
+
+                            while (clientRunning)
+                            {
+                                var networkStream = tcpClient.GetStream();
+                                var protocolPackage = Message.ReceiveMessage(networkStream);
+
+                                switch (protocolPackage.Cmd)
+                                {
+                                    case 1:
+                                        studentConected = serverActions.Login(protocolPackage.Data, networkStream);
+                                        break;
+                                    case 2:
+                                        serverActions.ListCoursesRequest(studentConected, networkStream);
+                                        break;
+                                    case 3:
+                                        serverActions.AddStudentToCourse(studentConected,protocolPackage.Data, networkStream);
+                                        break;
+                                    case 4:
+                                        serverActions.GetEnrolledCourses(studentConected,networkStream);
+                                        break;
+                                    case 5:
+                                        serverActions.AddFileToStudentCourse(studentConected, protocolPackage.Data,networkStream);
+                                        break;
+                                    case 6:
+                                        serverActions.GetStudentCourseFiles(studentConected, protocolPackage.Data, networkStream);
+                                        break;
+                                }
+                            };
+
+                        });
+                        threadClient.Start();
                     }
                 });
                 thread.Start();
@@ -59,7 +79,7 @@ namespace Server
 
             Console.WriteLine("Bienvenido al admin de Aulas");
             Menu(serverActions);
-            while (true)
+            while (serverRunning)
             {
                 Menu(serverActions);
             }
@@ -76,6 +96,7 @@ namespace Server
             Console.WriteLine("4 - Listar Cursos");
             Console.WriteLine("5 - Eliminar Curso");
             Console.WriteLine("6 - Dar de alta a alumno en curso");
+            Console.WriteLine("7 - Salir");
             var opcion = Console.ReadLine();
 
             switch (Convert.ToInt32(opcion))
@@ -98,10 +119,15 @@ namespace Server
                 case 6:
                     serverActions.AssignStudentToCourse();
                     break;
+                case 7:
+                    serverRunning = false;
+                    break;
                 default:
                     Console.WriteLine("Debe seleccionar una opción correcta");
                     break;
             }
+
+            Console.WriteLine("");
 
         }
 

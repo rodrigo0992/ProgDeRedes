@@ -49,7 +49,66 @@ namespace Logic
         {
             return this.Information.GetStudentByStudentNum(number);
         }
-        
+
+        public List<Course> GetEnrolledCourses(Student student)
+        {
+            var studentCourses = Information.GetStudentCourses().Where(x=>x.Student==student).ToList();
+            var listToReturn = new List<Course>();
+            foreach (var item in studentCourses)
+            {
+                listToReturn.Add(item.Course); 
+            }
+            return listToReturn;
+        }
+
+        public void AddStudentCourseFile(Student student, Course course, File file)
+        {
+
+
+            try
+            {
+                //var studentCourse = Information.GetStudentCourses().Find(x => (x.Student == student && x.Course == course));
+                foreach (var item in Information.GetStudentCourses())
+                {
+                    Console.WriteLine("----" + item.Course.Name);
+                    Console.WriteLine("----" + item.Student.Name);
+                    if (item.Course == course && item.Student == student)
+                        item.Files.Add(file);
+                }
+                
+            }
+            catch(Exception e)
+            {
+                //throw new Exception("No se pudo agregar el archivo");
+                throw new Exception(e.Message);
+            }
+        }
+
+        public List<File> GetStudentCourseFiles(Student student, Course course)
+        {
+            try
+            {
+                var studentCourse = Information.GetStudentCourses().Find(x => x.Student == student && x.Course == course);
+                return studentCourse.Files;
+            }
+            catch(Exception e)
+            {
+                throw new Exception("No tiene materiales subidos");
+            }
+        }
+
+
+        public string FileListToResponse(List<File> files)
+        {
+            string response = "";
+            foreach (File file in files)
+            {
+                response += "Archivo: " + file.Name + "Nota: " + file.Grade + "-";
+            }
+            return response;
+        }
+
+
         public bool ValidateStudentNumber(string str)
         {
             foreach (char c in str)

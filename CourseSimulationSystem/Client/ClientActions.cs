@@ -9,8 +9,15 @@ using System.Threading.Tasks;
 namespace Client
 {
     class ClientActions
-    { 
-        public bool Login(NetworkStream networkStream)
+    {
+        NetworkStream networkStream;
+
+        public ClientActions(NetworkStream networkStream)
+        {
+            this.networkStream = networkStream;
+        }
+
+        public bool Login()
         {
             Console.WriteLine("Ingrese su número de usuario:");
             var studentNum = Console.ReadLine();
@@ -35,16 +42,96 @@ namespace Client
             }
         }
 
-        public void AddStudentToCourse(NetworkStream networkStream)
+        public void AddStudentToCourse()
         {
-            var data = "abc";
-            Message.SendMessage(networkStream, "REQ", 2, data); // 
+            var data = "";
+            Message.SendMessage(networkStream, "REQ", 2, data); 
             var protocolPackageResponse = Message.ReceiveMessage(networkStream);
             var courseList = protocolPackageResponse.Data;
+            if (courseList != "")
+            {
+                Console.WriteLine("");
+                Console.WriteLine("Cursos disponibles para inscribirse:");
+                ShowCourses(courseList);
+                Console.WriteLine("Escriba el nombre del curso al que desea inscribirse:");
+                var course = Console.ReadLine();
+                Message.SendMessage(networkStream, "REQ", 3, course);
+
+                protocolPackageResponse = Message.ReceiveMessage(networkStream);
+                var loginResponse = protocolPackageResponse.Data;
+                Console.WriteLine(protocolPackageResponse.Data);
+            }
+            else
+            {
+                Console.WriteLine("");
+                Console.WriteLine("No tiene cursos disponibles para inscribirse");
+            }
+
+        }
+
+        public void getEnrolledCourses()
+        {
+            var data = "";
+            Message.SendMessage(networkStream, "REQ", 4, data);
+            var protocolPackageResponse = Message.ReceiveMessage(networkStream);
+            var courseList = protocolPackageResponse.Data;
+            Console.WriteLine("");
+            Console.WriteLine("Se encuentra inscripto a los siguientes cursos:");
             ShowCourses(courseList);
-            Console.WriteLine("Escriba el nombre del curso al que desea anotarse:");
-            var course= Console.ReadLine();
-            Message.SendMessage(networkStream, "REQ", 3, course);
+        }
+
+        public void AddFileToCourse()
+        {
+            Message.SendMessage(networkStream, "REQ", 4, "");
+            var protocolPackageResponse = Message.ReceiveMessage(networkStream);
+            var courseList = protocolPackageResponse.Data;
+            if (courseList != "")
+            {
+                Console.WriteLine("");
+                Console.WriteLine("Cursos disponibles para subir un material:");
+                ShowCourses(courseList);
+                Console.WriteLine("Escriba el nombre del curso al que desea subir un material:");
+                var course = Console.ReadLine();
+                Console.WriteLine("Ingrese el nombre del material:");
+                var name = Console.ReadLine();
+                Console.WriteLine("Ingrese src a material:");
+                var src = Console.ReadLine();
+
+
+                var data = @"{course:'" + course + "', filesource:'" + src + "', name:'" + name + "'}";
+
+                Message.SendMessage(networkStream, "REQ", 5, data);
+
+                protocolPackageResponse = Message.ReceiveMessage(networkStream);
+                Console.WriteLine(protocolPackageResponse.Data);
+            }
+            else
+            {
+                Console.WriteLine("");
+                Console.WriteLine("No tiene cursos disponibles para subir un material");
+            }
+
+        }
+
+        public void GetFiles()
+        {
+            Message.SendMessage(networkStream, "REQ", 4, "");
+            var protocolPackageResponse = Message.ReceiveMessage(networkStream);
+            var courseList = protocolPackageResponse.Data;
+            Console.WriteLine("");
+            Console.WriteLine("Se encuentra inscripto a los siguientes cursos:");
+            ShowCourses(courseList);
+
+            Console.WriteLine("");
+            Console.WriteLine("Escriba el nombre del curso al que desea consultar los materiales:");
+            var course = Console.ReadLine();
+
+            Message.SendMessage(networkStream, "REQ", 6, course);
+            protocolPackageResponse = Message.ReceiveMessage(networkStream);
+            var fileList = protocolPackageResponse.Data;
+            Console.WriteLine("");
+            Console.WriteLine("Materiales subidos al curso seleccionado:");
+            ShowCourses(fileList);
         }
 
         public void ShowCourses(string courseList)
