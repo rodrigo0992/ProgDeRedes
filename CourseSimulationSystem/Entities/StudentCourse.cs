@@ -11,5 +11,10 @@ namespace Entities
         public Student Student { get; set; }
         public Course Course { get; set; }
         public List<File> Files { get; set; }
+
+        public StudentCourse()
+        {
+            Files = new List<File>();
+        }
     }
 }

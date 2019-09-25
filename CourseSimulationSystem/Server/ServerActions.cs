@@ -204,18 +204,19 @@ namespace Server
             var courseRecived = json["course"].ToString();
             var fileSourceRecived = json["filesource"].ToString();
 
-            Course course = courseLogic.getCourseByCourseName(courseRecived);
-            File file = new File();
-            file.Name = nameRecived;
-            file.FileSource = fileSourceRecived;
             try
             {
+                Course course = courseLogic.getCourseByCourseName(courseRecived);
+                File file = new File();
+                file.Name = nameRecived;
+                file.FileSource = fileSourceRecived;
                 studentLogic.AddStudentCourseFile(student, course, file);
                 Message.SendMessage(networkStreamResponse, "RES", 5, "Archivo agregado exitosamente");
 
             }
             catch (Exception e)
             {
+                Console.WriteLine("es esta exepcion");
                 Message.SendMessage(networkStreamResponse, "RES", 5, e.Message);
             }
 

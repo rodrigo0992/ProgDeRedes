@@ -67,20 +67,13 @@ namespace Logic
 
             try
             {
-                //var studentCourse = Information.GetStudentCourses().Find(x => (x.Student == student && x.Course == course));
-                foreach (var item in Information.GetStudentCourses())
-                {
-                    Console.WriteLine("----" + item.Course.Name);
-                    Console.WriteLine("----" + item.Student.Name);
-                    if (item.Course == course && item.Student == student)
-                        item.Files.Add(file);
-                }
+                var studentCourse = Information.GetStudentCourses().Find(x => (x.Student == student && x.Course == course));
+                studentCourse.Files.Add(file);
                 
             }
             catch(Exception e)
             {
-                //throw new Exception("No se pudo agregar el archivo");
-                throw new Exception(e.Message);
+                throw new Exception("No se pudo agregar el archivo");
             }
         }
 
@@ -103,7 +96,7 @@ namespace Logic
             string response = "";
             foreach (File file in files)
             {
-                response += "Archivo: " + file.Name + "Nota: " + file.Grade + "-";
+                response += "Archivo: " + file.Name + " , Nota: " + file.Grade + "-";
             }
             return response;
         }
