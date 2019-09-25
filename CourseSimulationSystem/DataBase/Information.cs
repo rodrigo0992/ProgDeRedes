@@ -129,5 +129,17 @@ namespace DataBase
                 throw new Exception("No se puede borrar conexión de estudiante no conectado");
             }
         }
+
+        public StudentSocket GetStudentSocket(Student student)
+        {
+            if (ExistStudentConection(student))
+            {
+                return StudentConections.First(x => x.student == student);
+            }
+            else
+            {
+                throw new Exception("No se puede obtener conexión de estudiante no conectado");
+            }
+        }
     }
 }

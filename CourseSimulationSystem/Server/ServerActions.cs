@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using Entities;
 using Newtonsoft.Json.Linq;
 using Protocol;
+using System.IO;
 
 namespace Server
 {
@@ -15,6 +16,11 @@ namespace Server
     {
         CourseLogic courseLogic;
         StudentLogic studentLogic;
+        private string extension;
+        private string file;
+        private int fileLenght;
+        private string nameFile;
+
         public ServerActions(CourseLogic courseLogic, StudentLogic studentLogic)
         {
             this.courseLogic = courseLogic;
@@ -215,7 +221,7 @@ namespace Server
             try
             {
                 Course course = courseLogic.getCourseByCourseName(courseRecived);
-                File file = new File();
+                Entities.File file = new Entities.File();
                 file.Name = nameRecived;
                 file.FileSource = fileSourceRecived;
                 studentLogic.AddStudentCourseFile(student, course, file);
@@ -246,10 +252,10 @@ namespace Server
 
         }
 
-        public void ListFiles(List<File> listFiles)
+        public void ListFiles(List<Entities.File> listFiles)
         {
             Console.WriteLine("Lista de materiales:");
-            foreach (File file in listFiles)
+            foreach (Entities.File file in listFiles)
             {
                 Console.WriteLine("Nombre:" + file.Name);
             }
@@ -282,14 +288,14 @@ namespace Server
                     Console.WriteLine("Asigne una nota al material seleccionado:");
                     int grade = Convert.ToInt32(Console.ReadLine());
 
-                    studentLogic.AssignGrade(student,course,fileName,grade);
+                    studentLogic.AssignGrade(student, course, fileName, grade);
 
                     Console.WriteLine("Nota asignada con éxito");
                     Console.WriteLine("Desea notificar al alumno? (S/N)");
                     var answer = Console.ReadLine().ToLower();
                     if (answer == "s")
                     {
-
+                        var studentSocket = studentLogic.GetStudentSocket(student);
                         Console.WriteLine("Se notificó al alumno");
                     }
                     else {
@@ -303,6 +309,51 @@ namespace Server
                 }
             }
 
+        }
+
+        public void GetFileInitialData(string data, NetworkStream networkStreamResponse)
+        {
+            try
+            {
+                var json = JObject.Parse(data);
+                var fileLengthRecived = json["fileLength"].ToString();
+                var nameRecived = json["name"].ToString();
+
+                fileLenght = Convert.ToInt32(fileLengthRecived);
+                nameFile = nameRecived;
+
+                Message.SendMessage(networkStreamResponse, "RES", 7, "OK");
+
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+        }
+
+        public void GetFilePartData(string data, NetworkStream networkStreamResponse)
+        {
+            file = file + data;
+            Message.SendMessage(networkStreamResponse, "RES", 8, "OK");
+        }
+
+        public void GetFileFinalData(string data, NetworkStream networkStreamResponse)
+        {
+            file = file + data;
+            try
+            {
+                string folder = Environment.CurrentDirectory;
+                string path = Path.Combine(folder, nameFile);
+
+                System.IO.File.WriteAllBytes(path, Convert.FromBase64String(file));
+                Message.SendMessage(networkStreamResponse, "RES", 9, "OK");
+
+            }
+            catch(Exception e)
+            {
+                Message.SendMessage(networkStreamResponse, "RES", 9, "FAIL");
+            }
         }
     }
 

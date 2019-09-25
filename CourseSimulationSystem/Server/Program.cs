@@ -21,7 +21,7 @@ namespace Server
 
         static void Main(string[] args)
         {
-            var tcpListener = new TcpListener(IPAddress.Parse("192.168.1.42"), 6000);
+            var tcpListener = new TcpListener(IPAddress.Parse("192.168.1.43"), 6000);
             tcpListener.Start(100);
 
 
@@ -67,6 +67,16 @@ namespace Server
                                     case 6:
                                         serverActions.GetStudentCourseFiles(studentConected, protocolPackage.Data, networkStream);
                                         break;
+                                    case 7:
+                                        serverActions.GetFileInitialData(protocolPackage.Data, networkStream);
+                                        break;
+                                    case 8:
+                                        serverActions.GetFilePartData(protocolPackage.Data, networkStream);
+                                        break;
+                                    case 9:
+                                        serverActions.GetFileFinalData(protocolPackage.Data, networkStream);
+                                        break;
+
                                 }
                             };
 
