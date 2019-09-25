@@ -41,16 +41,16 @@ namespace Server
 
                             Student studentConected = new Student();
                             bool clientRunning = true;
+                            var networkStream = tcpClient.GetStream();
 
                             while (clientRunning)
                             {
-                                var networkStream = tcpClient.GetStream();
                                 var protocolPackage = Message.ReceiveMessage(networkStream);
 
                                 switch (protocolPackage.Cmd)
                                 {
                                     case 1:
-                                        studentConected = serverActions.Login(protocolPackage.Data, networkStream);
+                                        studentConected = serverActions.Login(protocolPackage.Data, networkStream, tcpClient);
                                         break;
                                     case 2:
                                         serverActions.ListCoursesRequest(studentConected, networkStream);
@@ -70,8 +70,13 @@ namespace Server
                                 }
                             };
 
+                            networkStream.Close();
+                            tcpClient.Dispose();
+
                         });
                         threadClient.Start();
+
+
                     }
                 });
                 thread.Start();
@@ -96,7 +101,8 @@ namespace Server
             Console.WriteLine("4 - Listar Cursos");
             Console.WriteLine("5 - Eliminar Curso");
             Console.WriteLine("6 - Dar de alta a alumno en curso");
-            Console.WriteLine("7 - Salir");
+            Console.WriteLine("7 - Asignar nota a alumno");
+            Console.WriteLine("8 - Salir");
             var opcion = Console.ReadLine();
 
             switch (Convert.ToInt32(opcion))
@@ -120,6 +126,9 @@ namespace Server
                     serverActions.AssignStudentToCourse();
                     break;
                 case 7:
+                    serverActions.AssignGrade();
+                    break;
+                case 8:
                     serverRunning = false;
                     break;
                 default:

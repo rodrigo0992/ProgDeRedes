@@ -22,7 +22,7 @@ namespace Server
         }
 
         // Start response server methods
-        public Student Login(string data, NetworkStream networkStreamResponse)
+        public Student Login(string data, NetworkStream networkStreamResponse, TcpClient tcpClient)
         {
             var studentToLogin = new Student();
             var json = JObject.Parse(data);
@@ -35,14 +35,22 @@ namespace Server
             }
             else
             {
-                studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
-                if (studentToLogin.Password == password)
+                try
                 {
-                    Message.SendMessage(networkStreamResponse, "RES", 1, "Password correcta");
+                    studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
+                    studentLogic.AddStudentConection(studentToLogin, tcpClient);
+                    if (studentToLogin.Password == password)
+                    {
+                        Message.SendMessage(networkStreamResponse, "RES", 1, "Password correcta");
+                    }
+                    else
+                    {
+                        Message.SendMessage(networkStreamResponse, "RES", 1, "Password incorrecta");
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    Message.SendMessage(networkStreamResponse, "RES", 1, "Password incorrecta");
+                    Message.SendMessage(networkStreamResponse, "RES", 1, e.Message);
                 }
             }
             return studentToLogin;
@@ -216,7 +224,6 @@ namespace Server
             }
             catch (Exception e)
             {
-                Console.WriteLine("es esta exepcion");
                 Message.SendMessage(networkStreamResponse, "RES", 5, e.Message);
             }
 
@@ -235,6 +242,65 @@ namespace Server
             catch (Exception e)
             {
                 Message.SendMessage(networkStreamResponse, "RES", 6, e.Message);
+            }
+
+        }
+
+        public void ListFiles(List<File> listFiles)
+        {
+            Console.WriteLine("Lista de materiales:");
+            foreach (File file in listFiles)
+            {
+                Console.WriteLine("Nombre:" + file.Name);
+            }
+        }
+
+        public void AssignGrade()
+        {
+            if (!courseLogic.existsStudentsAndCourses())
+            {
+                Console.WriteLine("No existen estudiantes y/o cursos.");
+            }
+            else
+            {
+                try
+                {
+                    Console.WriteLine("Seleccione el numero del alumno para asignar una nota:");
+                    ListStudents();
+                    int studentNum = Convert.ToInt32(Console.ReadLine());
+                    Student student = studentLogic.GetStudentByStudentNum(studentNum);
+                    Console.WriteLine("Seleccione el curso al que desea asignar una nota:");
+                    ListCourses();
+                    int courseNum = Convert.ToInt32(Console.ReadLine());
+                    Course course = courseLogic.getCourseByCourseNumber(courseNum);
+
+                    Console.WriteLine("Tiene los siguientes materiales para asignar nota, seleccione uno:");
+                    var listFiles = studentLogic.GetStudentCourseFilesWithoutGrade(student, course);
+                    ListFiles(listFiles);
+                    var fileName = Console.ReadLine();
+
+                    Console.WriteLine("Asigne una nota al material seleccionado:");
+                    int grade = Convert.ToInt32(Console.ReadLine());
+
+                    studentLogic.AssignGrade(student,course,fileName,grade);
+
+                    Console.WriteLine("Nota asignada con éxito");
+                    Console.WriteLine("Desea notificar al alumno? (S/N)");
+                    var answer = Console.ReadLine().ToLower();
+                    if (answer == "s")
+                    {
+
+                        Console.WriteLine("Se notificó al alumno");
+                    }
+                    else {
+                        Console.WriteLine("No se notificó al alumno");
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
             }
 
         }

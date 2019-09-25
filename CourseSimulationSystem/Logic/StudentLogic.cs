@@ -3,6 +3,7 @@ using Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -90,6 +91,44 @@ namespace Logic
             }
         }
 
+        public List<File> GetStudentCourseFilesWithoutGrade(Student student, Course course)
+        {
+            try
+            {
+                var studentCourse = Information.GetStudentCourses().Find(x => x.Student == student && x.Course == course);
+                return studentCourse.Files.Where(x => x.Grade == 0).ToList();
+            }
+            catch (Exception e)
+            {
+                throw new Exception("No tiene materiales subidos");
+            }
+        }
+
+        public File GetFileByName(Student student, Course course, string fileName)
+        {
+            try
+            {
+                var studentCourse = Information.GetStudentCourses().Find(x => x.Student == student && x.Course == course);
+                return studentCourse.Files.First(x => x.Name == fileName);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("No se encuentra el material");
+            }
+        }
+
+        public void AssignGrade(Student student, Course course, string fileName, int Grade)
+        {
+            try{
+                var file = GetFileByName( student,  course,  fileName);
+                file.Grade = Grade;
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
 
         public string FileListToResponse(List<File> files)
         {
@@ -101,6 +140,29 @@ namespace Logic
             return response;
         }
 
+        public void AddStudentConection(Student student, TcpClient tcpClient)
+        {
+            try
+            {
+                Information.AddStudentConection(student,tcpClient);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
+        public void DeleteStudentConection(Student student)
+        {
+            try
+            {
+                Information.DeleteStudentConection(student);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
 
         public bool ValidateStudentNumber(string str)
         {

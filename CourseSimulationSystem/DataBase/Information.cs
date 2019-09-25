@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Entities;
+using System.Net.Sockets;
 
 namespace DataBase
 {
@@ -12,12 +13,14 @@ namespace DataBase
         public List<Student>  Students { get; set; }
         public List<Course> Courses { get; set; }
         public List<StudentCourse> StudentCourses { get; set; }
+        public List<StudentSocket> StudentConections { get; set; }
 
         public Information()
         {
             Students = new List<Student>();
             Courses = new List<Course>();
             StudentCourses = new List<StudentCourse>();
+            StudentConections = new List<StudentSocket>();
         }
 
         public void AddStudent(Student student)
@@ -94,6 +97,37 @@ namespace DataBase
         public List<StudentCourse> GetStudentCourses()
         {
             return StudentCourses;
+        }
+
+        public bool ExistStudentConection(Student student)
+        {
+            return StudentConections.Exists(x => x.student == student);
+        }
+
+        public void AddStudentConection(Student student, TcpClient tcpClient)
+        {
+            if (!ExistStudentConection(student))
+            {
+                StudentSocket studentSocket = new StudentSocket(student, tcpClient);
+                StudentConections.Add(studentSocket);
+            }
+            else
+            {
+                throw new Exception("El estudiante ya se encuentra conectado");
+            }
+        }
+
+        public void DeleteStudentConection(Student student)
+        {
+            if (ExistStudentConection(student))
+            {
+                var studentSocket = StudentConections.First(x => x.student == student);
+                StudentConections.Remove(studentSocket);
+            }
+            else
+            {
+                throw new Exception("No se puede borrar conexión de estudiante no conectado");
+            }
         }
     }
 }
