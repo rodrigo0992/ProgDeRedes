@@ -294,16 +294,22 @@ namespace Server
                     studentLogic.AssignGrade(student, course, fileName, grade);
 
                     Console.WriteLine("Nota asignada con éxito");
-                    Console.WriteLine("Desea notificar al alumno? (S/N)");
-                    var answer = Console.ReadLine().ToLower();
-                    if (answer == "s")
+
+                    try
                     {
                         var studentSocket = studentLogic.GetStudentSocket(student);
+                        var networStream = studentSocket.tcpClient.GetStream();
+                        var notification = course.Name + ";" + fileName + ";" + grade;
+                        Message.SendMessage(networStream, "REQ", 0, notification);
+
                         Console.WriteLine("Se notificó al alumno");
                     }
-                    else {
+                    catch (Exception e)
+                    {
                         Console.WriteLine("No se notificó al alumno");
                     }
+                        
+   
 
                 }
                 catch (Exception e)

@@ -21,8 +21,11 @@ namespace Server
 
         static void Main(string[] args)
         {
-            var tcpListener = new TcpListener(IPAddress.Parse("172.29.2.68"), 6000);
+            var tcpListener = new TcpListener(IPAddress.Parse("172.29.0.63"), 6000);
             tcpListener.Start(100);
+
+            var tcpListenerBackground = new TcpListener(IPAddress.Parse("172.29.0.63"), 7000);
+            tcpListenerBackground.Start(100);
 
 
             Information information = new Information();
@@ -36,12 +39,14 @@ namespace Server
                     while (serverRunning)
                     {
                         var tcpClient = tcpListener.AcceptTcpClient();
+                        var tcpClientBackground = tcpListenerBackground.AcceptTcpClient();
 
                         var threadClient = new Thread(() => {
 
                             Student studentConected = new Student();
                             bool clientRunning = true;
                             var networkStream = tcpClient.GetStream();
+                            var networkStreamBackground = tcpClientBackground.GetStream();
 
                             while (clientRunning)
                             {
@@ -50,7 +55,7 @@ namespace Server
                                 switch (protocolPackage.Cmd)
                                 {
                                     case 1:
-                                        studentConected = serverActions.Login(protocolPackage.Data, networkStream, tcpClient);
+                                        studentConected = serverActions.Login(protocolPackage.Data, networkStream, tcpClientBackground);
                                         break;
                                     case 2:
                                         serverActions.ListCoursesRequest(studentConected, networkStream);
