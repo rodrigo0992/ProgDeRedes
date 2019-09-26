@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using Logic;
 using System.Net.Sockets;
 using Entities;
-using Newtonsoft.Json.Linq;
 using Protocol;
+using System.IO;
 
 namespace Server
 {
@@ -15,6 +15,9 @@ namespace Server
     {
         CourseLogic courseLogic;
         StudentLogic studentLogic;
+        private string file;
+        private int fileLenght;
+        private string nameFile;
 
         public ServerActions(CourseLogic courseLogic, StudentLogic studentLogic)
         {
@@ -26,36 +29,43 @@ namespace Server
         public Student Login(string data, NetworkStream networkStreamResponse, TcpClient tcpClient)
         {
             var studentToLogin = new Student();
-            var json = JObject.Parse(data);
-            var studentNum = json["studentNum"].ToString();
-            var password = json["password"].ToString();
-            var studentExists = this.studentLogic.StudentExists(Convert.ToInt32(studentNum));
-            if (!studentExists)
+            try
             {
-                Message.SendMessage(networkStreamResponse, "RES", 1, "Estudiante no existe");
+                var dataArray = Message.Deserialize(data);
+                var studentNum = dataArray[0];
+                var password = dataArray[1];
+                var studentExists = this.studentLogic.StudentExists(Convert.ToInt32(studentNum));
+                if (!studentExists)
+                {
+                    Message.SendMessage(networkStreamResponse, "RES", 1, "Estudiante no existe");
+                }
+                else
+                {
+                    try
+                    {
+                        studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
+                        studentLogic.AddStudentConection(studentToLogin, tcpClient);
+                        if (studentToLogin.Password == password)
+                        {
+                            Message.SendMessage(networkStreamResponse, "RES", 1, "Password correcta");
+                        }
+                        else
+                        {
+                            Message.SendMessage(networkStreamResponse, "RES", 1, "Password incorrecta");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Message.SendMessage(networkStreamResponse, "RES", 1, e.Message);
+                    }
+                }
+                
             }
-            else
+            catch(Exception e)
             {
-                try
-                {
-                    studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
-                    studentLogic.AddStudentConection(studentToLogin, tcpClient);
-                    if (studentToLogin.Password == password)
-                    {
-                        Message.SendMessage(networkStreamResponse, "RES", 1, "Password correcta");
-                    }
-                    else
-                    {
-                        Message.SendMessage(networkStreamResponse, "RES", 1, "Password incorrecta");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Message.SendMessage(networkStreamResponse, "RES", 1, e.Message);
-                }
+                Console.WriteLine("Faltan datos para loguearse");   
             }
             return studentToLogin;
-                
         }
 
         public void ListCoursesRequest(Student student,NetworkStream networkStreamResponse)
@@ -138,12 +148,10 @@ namespace Server
         public void ListCourses()
         {
             Console.WriteLine("Lista de cursos:");
-            int index = 0;
             var courses = this.courseLogic.GetCourses();
             foreach (Course course in courses)
             {
                 Console.WriteLine(course.CourseNum + " - " + course.Name);
-                index++;
             }
         }
 
@@ -198,15 +206,15 @@ namespace Server
 
         public void AddFileToStudentCourse(Student student, string data, NetworkStream networkStreamResponse)
         {
-            var json = JObject.Parse(data);
-            var nameRecived = json["name"].ToString();
-            var courseRecived = json["course"].ToString();
-            var fileSourceRecived = json["filesource"].ToString();
-
             try
             {
+                var dataArray = Message.Deserialize(data);
+                var courseRecived = dataArray[0];
+                var fileSourceRecived = dataArray[1];
+                var nameRecived = dataArray[2];
+
                 Course course = courseLogic.getCourseByCourseName(courseRecived);
-                File file = new File();
+                Entities.File file = new Entities.File();
                 file.Name = nameRecived;
                 file.FileSource = fileSourceRecived;
                 studentLogic.AddStudentCourseFile(student, course, file);
@@ -237,10 +245,10 @@ namespace Server
 
         }
 
-        public void ListFiles(List<File> listFiles)
+        public void ListFiles(List<Entities.File> listFiles)
         {
             Console.WriteLine("Lista de materiales:");
-            foreach (File file in listFiles)
+            foreach (Entities.File file in listFiles)
             {
                 Console.WriteLine("Nombre:" + file.Name);
             }
@@ -273,17 +281,21 @@ namespace Server
                     Console.WriteLine("Asigne una nota al material seleccionado:");
                     int grade = Convert.ToInt32(studentLogic.setNumber("Indicar nota:"));
 
-                    studentLogic.AssignGrade(student,course,fileName,grade);
+                    studentLogic.AssignGrade(student, course, fileName, grade);
 
                     Console.WriteLine("Nota asignada con éxito");
                     Console.WriteLine("Desea notificar al alumno? (S/N)");
                     var answer = Console.ReadLine().ToLower();
                     if (answer == "s")
                     {
+<<<<<<< HEAD
                         //TcpClient studentTcpClient = studentLogic.getUserTcpClient(student);
                         //var networkStream = studentTcpClient.GetStream();
                         //var data = "Su nota en " + course.Name + "ha sido " + grade.ToString();
                         //Message.SendMessage(networkStream, "RES", , data);
+=======
+                        var studentSocket = studentLogic.GetStudentSocket(student);
+>>>>>>> c93d808d9e82a800ae7749a789bef5d7cbd46731
                         Console.WriteLine("Se notificó al alumno");
                     }
                     else {
@@ -297,6 +309,51 @@ namespace Server
                 }
             }
 
+        }
+
+        public void GetFileInitialData(string data, NetworkStream networkStreamResponse)
+        {
+            try
+            {
+                var dataArray = Message.Deserialize(data);
+                var fileLengthRecived = dataArray[0];
+                var nameRecived = dataArray[1];
+
+                fileLenght = Convert.ToInt32(fileLengthRecived);
+                nameFile = nameRecived;
+
+                Message.SendMessage(networkStreamResponse, "RES", 7, "OK");
+
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+
+        }
+
+        public void GetFilePartData(string data, NetworkStream networkStreamResponse)
+        {
+            file = file + data;
+            Message.SendMessage(networkStreamResponse, "RES", 8, "OK");
+        }
+
+        public void GetFileFinalData(string data, NetworkStream networkStreamResponse)
+        {
+            file = file + data;
+            try
+            {
+                string folder = Environment.CurrentDirectory;
+                string path = Path.Combine(folder, nameFile);
+
+                System.IO.File.WriteAllBytes(path, Convert.FromBase64String(file));
+                Message.SendMessage(networkStreamResponse, "RES", 9, "OK");
+
+            }
+            catch(Exception e)
+            {
+                Message.SendMessage(networkStreamResponse, "RES", 9, "FAIL");
+            }
         }
     }
 

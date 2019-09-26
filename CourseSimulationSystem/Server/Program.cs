@@ -71,6 +71,16 @@ namespace Server
                                     case 6:
                                         serverActions.GetStudentCourseFiles(studentConected, protocolPackage.Data, networkStream);
                                         break;
+                                    case 7:
+                                        serverActions.GetFileInitialData(protocolPackage.Data, networkStream);
+                                        break;
+                                    case 8:
+                                        serverActions.GetFilePartData(protocolPackage.Data, networkStream);
+                                        break;
+                                    case 9:
+                                        serverActions.GetFileFinalData(protocolPackage.Data, networkStream);
+                                        break;
+
                                 }
                             };
 

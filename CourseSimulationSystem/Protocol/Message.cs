@@ -73,5 +73,19 @@ namespace Protocol
             //data
             networkStream.Write(messageBytes, 0, messageBytes.Length);
         }
+
+        public static string Serialize(List<String> StringsToSerialize)
+        {
+            String stringSerialized = "";
+            foreach (string item in StringsToSerialize)
+            {
+                stringSerialized += item + ";";
+            }
+            return stringSerialized;
+        }
+        public static string[] Deserialize(String StringsToDeserialize)
+        {
+            return StringsToDeserialize.Split(';');
+        }
     }
 }

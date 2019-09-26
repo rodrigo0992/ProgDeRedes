@@ -168,6 +168,18 @@ namespace Logic
             }
         }
 
+        public StudentSocket GetStudentSocket(Student student)
+        {
+            try
+            {
+                return Information.GetStudentSocket(student);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
+        }
+
         public bool ValidateStudentNumber(string str)
         {
             foreach (char c in str)
