@@ -40,23 +40,39 @@ namespace DataBase
         {
             this.StudentCourses.Add(studentCourse);
         }
-        public bool StudentExists(int studentNum)
+        public bool StudentExists(string studentNum)
         {
             try
             {
-                this.Students.First(x => x.StudentNum == studentNum);
+                this.Students.First(x => x.StudentNum == Convert.ToInt32(studentNum));
                 return true;
             }
             catch(Exception e)
             {
-                return false;
+                try
+                {
+                    this.Students.First(x => x.Mail == studentNum);
+                    return true;
+                }
+                catch (Exception e1)
+                {
+                    return false;
+                }
             }
         }
 
-        public Student GetStudentByStudentNum(int studentNum)
+        public Student GetStudentByStudentNum(string studentNum)
         {
-                var studentToReturn = this.Students.First(x => x.StudentNum == studentNum);
+            try
+            {
+                var studentToReturn = this.Students.First(x => x.StudentNum == Convert.ToInt32(studentNum));
                 return studentToReturn;
+            }
+            catch (Exception e)
+            {
+                var studentToReturn = this.Students.First(x => x.Mail == studentNum);
+                return studentToReturn;
+            }
         }
 
         public Course GetCourseByCourseNumber(int courseNum)

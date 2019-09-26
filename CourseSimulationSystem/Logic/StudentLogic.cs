@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Logic
@@ -46,11 +47,11 @@ namespace Logic
             return this.Information.Students;
         }
 
-        public bool StudentExists(int number)
+        public bool StudentExists(string number)
         {
             return this.Information.StudentExists(number);
         }
-        public Student GetStudentByStudentNum(int number)
+        public Student GetStudentByStudentNum(string number)
         {
             return this.Information.GetStudentByStudentNum(number);
         }
@@ -192,6 +193,18 @@ namespace Logic
                     
             }
             return true;
+        }
+
+        public string ValidateUserMail(string mail)
+        {
+            String regExMail = @"^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$";
+            while (String.IsNullOrEmpty(mail) ||
+            !Regex.IsMatch(mail, regExMail))
+            {
+                Console.WriteLine("Mail invalido, ingrese nuevamente: ");
+                mail = Console.ReadLine();
+            }
+            return mail;
         }
 
         public static bool isEmpty(string s)

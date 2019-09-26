@@ -32,9 +32,9 @@ namespace Server
             try
             {
                 var dataArray = Message.Deserialize(data);
-                var studentNum = dataArray[0];
+                var student = dataArray[0];
                 var password = dataArray[1];
-                var studentExists = this.studentLogic.StudentExists(Convert.ToInt32(studentNum));
+                var studentExists = this.studentLogic.StudentExists(student);
                 if (!studentExists)
                 {
                     Message.SendMessage(networkStreamResponse, "RES", 1, "Estudiante no existe");
@@ -43,7 +43,7 @@ namespace Server
                 {
                     try
                     {
-                        studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
+                        studentToLogin = this.studentLogic.GetStudentByStudentNum(student);
                         studentLogic.AddStudentConection(studentToLogin, tcpClient);
                         if (studentToLogin.Password == password)
                         {
@@ -98,11 +98,17 @@ namespace Server
             Console.WriteLine("CREAR USUARIO");
             var studentNum = studentLogic.setNumber("Ingrese numero de usuario");
             var studentName = studentLogic.setName("Ingrese nombre de usuario");
+            var studentSurname = studentLogic.setName("Ingrese apellido");
+            Console.WriteLine("Ingrese mail:");
+            var mail= Console.ReadLine();
+            var studentMail = studentLogic.ValidateUserMail(mail);
             var studentPassword = studentLogic.setName("Ingrese contrasena");
             Student newStudent = new Student();
             newStudent.StudentNum = Convert.ToInt32(studentNum);
             newStudent.Name = studentName;
             newStudent.Password = studentPassword;
+            newStudent.SurName = studentSurname;
+            newStudent.Mail = mail;
             try
             {
                 this.studentLogic.AddStudent(newStudent);
@@ -173,7 +179,7 @@ namespace Server
             {
                 Console.WriteLine("Seleccione el numero del alumno:");
                 ListStudents();
-                int studentNum = Convert.ToInt32(Console.ReadLine());
+                var studentNum = Console.ReadLine();
                 Student student = studentLogic.GetStudentByStudentNum(studentNum);
                 Console.WriteLine("Seleccione el curso al que desea inscribir al alumno:");
                 ListCourses();
@@ -266,7 +272,7 @@ namespace Server
                 {
                     Console.WriteLine("Seleccione el numero del alumno para asignar una nota:");
                     ListStudents();
-                    int studentNum = Convert.ToInt32(studentLogic.setNumber("Ingrese numero de estudiante:"));
+                    var studentNum = studentLogic.setName("Ingrese numero de estudiante:");
                     Student student = studentLogic.GetStudentByStudentNum(studentNum);
                     Console.WriteLine("Seleccione el curso al que desea asignar una nota:");
                     ListCourses();
@@ -288,14 +294,7 @@ namespace Server
                     var answer = Console.ReadLine().ToLower();
                     if (answer == "s")
                     {
-<<<<<<< HEAD
-                        //TcpClient studentTcpClient = studentLogic.getUserTcpClient(student);
-                        //var networkStream = studentTcpClient.GetStream();
-                        //var data = "Su nota en " + course.Name + "ha sido " + grade.ToString();
-                        //Message.SendMessage(networkStream, "RES", , data);
-=======
                         var studentSocket = studentLogic.GetStudentSocket(student);
->>>>>>> c93d808d9e82a800ae7749a789bef5d7cbd46731
                         Console.WriteLine("Se notificó al alumno");
                     }
                     else {

@@ -24,7 +24,7 @@ namespace Client
 
         public bool Login()
         {
-            var studentNum = studentLogic.setNumber("Ingrese su numero de usuario");
+            var studentNum = studentLogic.setName("Ingrese su numero de usuario o mail");
             var studentPassword = studentLogic.setName("Ingrese su contrasena");
 
             var data = studentNum + ";" + studentPassword;
