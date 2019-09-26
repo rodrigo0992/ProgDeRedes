@@ -25,7 +25,7 @@ namespace Client
             Console.WriteLine("Ingrese su contraseña:");
             var studentPassword = Console.ReadLine();
 
-            var data = @"{studentNum:'" + studentNum + "', password:'" + studentPassword + "'}";
+            var data = studentNum + ";" + studentPassword;
 
             Message.SendMessage(networkStream, "REQ", 01, data);
 
@@ -97,10 +97,11 @@ namespace Client
                 var name = Console.ReadLine();
                 Console.WriteLine("Ingrese src a material:");
                 var src = Console.ReadLine();
+                Console.WriteLine(src);
 
                 if (SendFile(src))
                 {
-                    var data = @"{course:'" + course + "', filesource:'" + src + "', name:'" + name + "'}";
+                    var data = course + ";" + src + ";" + name;
                     Message.SendMessage(networkStream, "REQ", 5, data);
 
                     protocolPackageResponse = Message.ReceiveMessage(networkStream);
@@ -150,7 +151,7 @@ namespace Client
                 var fileLength = (int)fileInfo.Length;
                 double fileSplits = (double)fileLength / PART_SIZE;
 
-                var initialData = @"{fileLength:'" + fileLength + "', name:'" + name + "'}";
+                var initialData = fileLength + ";" + name;
                 Message.SendMessage(networkStream, "REQ", 7, initialData);
                 var protocolPackageResponse = Message.ReceiveMessage(networkStream);
                 if (protocolPackageResponse.Data == "OK")

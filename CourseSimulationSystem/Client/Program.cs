@@ -16,8 +16,8 @@ namespace Client
         static void Main(string[] args)
         {
             
-            var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse("192.168.1.43"), 0));
-            tcpClient.Connect(IPAddress.Parse("192.168.1.43"), 6000);
+            var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse("172.29.2.68"), 0));
+            tcpClient.Connect(IPAddress.Parse("172.29.2.68"), 6000);
             var networkStream = tcpClient.GetStream();
 
             ClientActions clientActions = new ClientActions(networkStream);

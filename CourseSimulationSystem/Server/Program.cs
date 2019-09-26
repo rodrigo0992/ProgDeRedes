@@ -21,7 +21,7 @@ namespace Server
 
         static void Main(string[] args)
         {
-            var tcpListener = new TcpListener(IPAddress.Parse("192.168.1.43"), 6000);
+            var tcpListener = new TcpListener(IPAddress.Parse("172.29.2.68"), 6000);
             tcpListener.Start(100);
 
 

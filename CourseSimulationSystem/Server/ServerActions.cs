@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Logic;
 using System.Net.Sockets;
 using Entities;
-using Newtonsoft.Json.Linq;
 using Protocol;
 using System.IO;
 
@@ -16,7 +15,6 @@ namespace Server
     {
         CourseLogic courseLogic;
         StudentLogic studentLogic;
-        private string extension;
         private string file;
         private int fileLenght;
         private string nameFile;
@@ -31,36 +29,43 @@ namespace Server
         public Student Login(string data, NetworkStream networkStreamResponse, TcpClient tcpClient)
         {
             var studentToLogin = new Student();
-            var json = JObject.Parse(data);
-            var studentNum = json["studentNum"].ToString();
-            var password = json["password"].ToString();
-            var studentExists = this.studentLogic.StudentExists(Convert.ToInt32(studentNum));
-            if (!studentExists)
+            try
             {
-                Message.SendMessage(networkStreamResponse, "RES", 1, "Estudiante no existe");
+                var dataArray = Message.Deserialize(data);
+                var studentNum = dataArray[0];
+                var password = dataArray[1];
+                var studentExists = this.studentLogic.StudentExists(Convert.ToInt32(studentNum));
+                if (!studentExists)
+                {
+                    Message.SendMessage(networkStreamResponse, "RES", 1, "Estudiante no existe");
+                }
+                else
+                {
+                    try
+                    {
+                        studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
+                        studentLogic.AddStudentConection(studentToLogin, tcpClient);
+                        if (studentToLogin.Password == password)
+                        {
+                            Message.SendMessage(networkStreamResponse, "RES", 1, "Password correcta");
+                        }
+                        else
+                        {
+                            Message.SendMessage(networkStreamResponse, "RES", 1, "Password incorrecta");
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Message.SendMessage(networkStreamResponse, "RES", 1, e.Message);
+                    }
+                }
+                
             }
-            else
+            catch(Exception e)
             {
-                try
-                {
-                    studentToLogin = this.studentLogic.GetStudentByStudentNum(Convert.ToInt32(studentNum));
-                    studentLogic.AddStudentConection(studentToLogin, tcpClient);
-                    if (studentToLogin.Password == password)
-                    {
-                        Message.SendMessage(networkStreamResponse, "RES", 1, "Password correcta");
-                    }
-                    else
-                    {
-                        Message.SendMessage(networkStreamResponse, "RES", 1, "Password incorrecta");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Message.SendMessage(networkStreamResponse, "RES", 1, e.Message);
-                }
+                Console.WriteLine("Faltan datos para loguearse");   
             }
             return studentToLogin;
-                
         }
 
         public void ListCoursesRequest(Student student,NetworkStream networkStreamResponse)
@@ -153,12 +158,10 @@ namespace Server
         public void ListCourses()
         {
             Console.WriteLine("Lista de cursos:");
-            int index = 0;
             var courses = this.courseLogic.GetCourses();
             foreach (Course course in courses)
             {
                 Console.WriteLine(course.CourseNum + " - " + course.Name);
-                index++;
             }
         }
 
@@ -213,13 +216,13 @@ namespace Server
 
         public void AddFileToStudentCourse(Student student, string data, NetworkStream networkStreamResponse)
         {
-            var json = JObject.Parse(data);
-            var nameRecived = json["name"].ToString();
-            var courseRecived = json["course"].ToString();
-            var fileSourceRecived = json["filesource"].ToString();
-
             try
             {
+                var dataArray = Message.Deserialize(data);
+                var courseRecived = dataArray[0];
+                var fileSourceRecived = dataArray[1];
+                var nameRecived = dataArray[2];
+
                 Course course = courseLogic.getCourseByCourseName(courseRecived);
                 Entities.File file = new Entities.File();
                 file.Name = nameRecived;
@@ -315,9 +318,9 @@ namespace Server
         {
             try
             {
-                var json = JObject.Parse(data);
-                var fileLengthRecived = json["fileLength"].ToString();
-                var nameRecived = json["name"].ToString();
+                var dataArray = Message.Deserialize(data);
+                var fileLengthRecived = dataArray[0];
+                var nameRecived = dataArray[1];
 
                 fileLenght = Convert.ToInt32(fileLengthRecived);
                 nameFile = nameRecived;
