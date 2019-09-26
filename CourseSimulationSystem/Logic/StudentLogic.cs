@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Logic
@@ -13,6 +14,10 @@ namespace Logic
     {
         private Information Information { get; set; }
 
+        public StudentLogic()
+        {
+
+        }
         public StudentLogic(Information information)
         {
             this.Information = information;
@@ -42,11 +47,11 @@ namespace Logic
             return this.Information.Students;
         }
 
-        public bool StudentExists(int number)
+        public bool StudentExists(string number)
         {
             return this.Information.StudentExists(number);
         }
-        public Student GetStudentByStudentNum(int number)
+        public Student GetStudentByStudentNum(string number)
         {
             return this.Information.GetStudentByStudentNum(number);
         }
@@ -181,10 +186,69 @@ namespace Logic
             foreach (char c in str)
             {
                 if (c < '0' || c > '9')
+                {
+                    Console.WriteLine("Debe ingresar solo numeros:");
                     return false;
+                }
+                    
             }
             return true;
         }
 
+        public string ValidateUserMail(string mail)
+        {
+            String regExMail = @"^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$";
+            while (String.IsNullOrEmpty(mail) ||
+            !Regex.IsMatch(mail, regExMail))
+            {
+                Console.WriteLine("Mail invalido, ingrese nuevamente: ");
+                mail = Console.ReadLine();
+            }
+            return mail;
+        }
+
+        public static bool isEmpty(string s)
+        {
+            if (s == null || s == String.Empty)
+            {
+                Console.WriteLine("El campo no puede estar vacio");
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public String setNumber(string message)
+        {
+            var studentNum = "";
+            bool isCorrect = false;
+            while (!isCorrect)
+            {
+                Console.WriteLine(message);
+                studentNum = Console.ReadLine();
+                isCorrect = ValidateStudentNumber(studentNum) && !isEmpty(studentNum);
+            }
+            return studentNum;
+        }
+
+        public String setName(string message)
+        {
+            var studentString = "";
+            bool isCorrect = false;
+            while (!isCorrect)
+            {
+                Console.WriteLine(message);
+                studentString = Console.ReadLine();
+                isCorrect = !isEmpty(studentString);
+            }
+            return studentString;
+        }
+
+        public TcpClient getUserTcpClient(Student student)
+        {
+            return Information.StudentConections.Find(x => x.student == student).tcpClient;
+        }
     }
 }

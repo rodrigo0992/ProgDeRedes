@@ -1,4 +1,5 @@
-﻿using Protocol;
+﻿using Logic;
+using Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Configuration;
 
 namespace Client
 {
@@ -17,13 +19,20 @@ namespace Client
 
         static void Main(string[] args)
         {
-            
-            var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse("172.29.0.63"), 0));
-            tcpClient.Connect(IPAddress.Parse("172.29.0.63"), 6000);
-            var networkStream = tcpClient.GetStream();
 
-            var tcpClientBackground = new TcpClient(new IPEndPoint(IPAddress.Parse("172.29.0.63"), 0));
-            tcpClientBackground.Connect(IPAddress.Parse("172.29.0.63"), 7000);
+            string ipServer = ConfigurationManager.AppSettings["ipServer"];
+            string ipClient = ConfigurationManager.AppSettings["ipClient"];
+            int port = Convert.ToInt32(ConfigurationManager.AppSettings["port"]);
+            int portBack = Convert.ToInt32(ConfigurationManager.AppSettings["portBack"]);
+
+            var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(ipClient), 0));
+            tcpClient.Connect(IPAddress.Parse(ipServer), port);
+            var networkStream = tcpClient.GetStream();
+            var studentLogic = new StudentLogic();
+            var courseLogic = new CourseLogic();
+
+            var tcpClientBackground = new TcpClient(new IPEndPoint(IPAddress.Parse(ipClient), 0));
+            tcpClientBackground.Connect(IPAddress.Parse(ipServer), portBack);
             var networkStreamBackground = tcpClientBackground.GetStream();
             var threadClient = new Thread(() => {
                 while (clientRunning)
@@ -35,8 +44,7 @@ namespace Client
             });
             threadClient.Start();
 
-
-            ClientActions clientActions = new ClientActions(networkStream);
+            ClientActions clientActions = new ClientActions(networkStream, courseLogic, studentLogic);
 
             Console.WriteLine("Bienvenido a Aulas");
             Console.WriteLine("Continue para iniciar sesión");

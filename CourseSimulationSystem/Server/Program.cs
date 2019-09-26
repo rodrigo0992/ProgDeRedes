@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using Entities;
+using System.Configuration;
 
 namespace Server
 {
@@ -21,10 +22,14 @@ namespace Server
 
         static void Main(string[] args)
         {
-            var tcpListener = new TcpListener(IPAddress.Parse("172.29.0.63"), 6000);
+            string ip = ConfigurationManager.AppSettings["ip"];
+            int port = Convert.ToInt32(ConfigurationManager.AppSettings["port"]);
+            int portBack = Convert.ToInt32(ConfigurationManager.AppSettings["portBack"]);
+
+            var tcpListener = new TcpListener(IPAddress.Parse(ip), port);
             tcpListener.Start(100);
 
-            var tcpListenerBackground = new TcpListener(IPAddress.Parse("172.29.0.63"), 7000);
+            var tcpListenerBackground = new TcpListener(IPAddress.Parse(ip), portBack);
             tcpListenerBackground.Start(100);
 
 
@@ -103,13 +108,13 @@ namespace Server
             {
                 Menu(serverActions);
             }
-
         }
 
         private static void Menu(ServerActions serverActions)
         {
-            
-            Console.WriteLine("Seleccione una opción");
+            StudentLogic studentLogic = new StudentLogic();
+
+            Console.WriteLine("Menu:");
             Console.WriteLine("1 - Crear Estudiante");
             Console.WriteLine("2 - Listar Estudiantes");
             Console.WriteLine("3 - Crear Curso");
@@ -118,8 +123,7 @@ namespace Server
             Console.WriteLine("6 - Dar de alta a alumno en curso");
             Console.WriteLine("7 - Asignar nota a alumno");
             Console.WriteLine("8 - Salir");
-            var opcion = Console.ReadLine();
-
+            var opcion = studentLogic.setNumber("Ingrese una opcion:");
             switch (Convert.ToInt32(opcion))
             {
                 case 1:
@@ -150,11 +154,8 @@ namespace Server
                     Console.WriteLine("Debe seleccionar una opción correcta");
                     break;
             }
-
             Console.WriteLine("");
-
         }
-
     }
 }
        
