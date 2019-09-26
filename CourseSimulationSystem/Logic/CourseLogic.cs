@@ -12,6 +12,10 @@ namespace Logic
     {
         private Information Information { get; set; }
 
+        public CourseLogic()
+        {
+
+        }
         public CourseLogic(Information information)
         {
             this.Information = information;
@@ -53,6 +57,10 @@ namespace Logic
             }
         }
 
+        public bool CourseExists(string courseName)
+        {
+            return this.Information.CourseExists(courseName);
+        }
         public void DeleteCourse(int courseIndex)
         {
             this.Information.DeleteCourse(courseIndex);
@@ -88,6 +96,60 @@ namespace Logic
                 response += course.Name + "-";
             }
             return response;
+        }
+
+        public bool ValidateStudentNumber(string str)
+        {
+            foreach (char c in str)
+            {
+                if (c < '0' || c > '9')
+                {
+                    Console.WriteLine("Debe ingresar solo numeros:");
+                    return false;
+                }
+
+            }
+            return true;
+        }
+
+        public static bool isEmpty(string s)
+        {
+            if (s == null || s == String.Empty)
+            {
+                Console.WriteLine("El campo no puede estar vacio");
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public String setNumber(string message)
+        {
+            var studentNum = "";
+            bool isCorrect = false;
+            while (!isCorrect)
+            {
+                Console.WriteLine(message);
+                studentNum = Console.ReadLine();
+                isCorrect = ValidateStudentNumber(studentNum) && !isEmpty(studentNum);
+            }
+            return studentNum;
+        }
+
+
+        public String setName(string message) 
+        {
+            var studentString = "";
+            bool isCorrect = false;
+            while (!isCorrect)
+            {
+                Console.WriteLine(message);
+                studentString = Console.ReadLine();
+                isCorrect = !isEmpty(studentString);
+            }
+            return studentString;
         }
     }
 }

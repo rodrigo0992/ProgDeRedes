@@ -1,4 +1,5 @@
-﻿using Protocol;
+﻿using Logic;
+using Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,18 +12,19 @@ namespace Client
     class ClientActions
     {
         NetworkStream networkStream;
-
-        public ClientActions(NetworkStream networkStream)
+        StudentLogic studentLogic;
+        CourseLogic courseLogic;
+        public ClientActions(NetworkStream networkStream, CourseLogic courseLogic, StudentLogic studentLogic)
         {
             this.networkStream = networkStream;
+            this.courseLogic = courseLogic;
+            this.studentLogic = studentLogic;
         }
 
         public bool Login()
         {
-            Console.WriteLine("Ingrese su número de usuario:");
-            var studentNum = Console.ReadLine();
-            Console.WriteLine("Ingrese su contraseña:");
-            var studentPassword = Console.ReadLine();
+            var studentNum = studentLogic.setNumber("Ingrese su numero de usuario");
+            var studentPassword = studentLogic.setName("Ingrese su contrasena");
 
             var data = @"{studentNum:'" + studentNum + "', password:'" + studentPassword + "'}";
 
@@ -53,8 +55,7 @@ namespace Client
                 Console.WriteLine("");
                 Console.WriteLine("Cursos disponibles para inscribirse:");
                 ShowCourses(courseList);
-                Console.WriteLine("Escriba el nombre del curso al que desea inscribirse:");
-                var course = Console.ReadLine();
+                var course = courseLogic.setName("Escriba el nombre del curso al que desea inscribirse:");
                 Message.SendMessage(networkStream, "REQ", 3, course);
 
                 protocolPackageResponse = Message.ReceiveMessage(networkStream);
@@ -90,12 +91,9 @@ namespace Client
                 Console.WriteLine("");
                 Console.WriteLine("Cursos disponibles para subir un material:");
                 ShowCourses(courseList);
-                Console.WriteLine("Escriba el nombre del curso al que desea subir un material:");
-                var course = Console.ReadLine();
-                Console.WriteLine("Ingrese el nombre del material:");
-                var name = Console.ReadLine();
-                Console.WriteLine("Ingrese src a material:");
-                var src = Console.ReadLine();
+                var course = courseLogic.setName("Escriba el nombre del curso al que desea subir un material:");
+                var name = courseLogic.setName("Ingrese el nombre del material:");
+                var src = courseLogic.setName("Ingrese src al material");
 
 
                 var data = @"{course:'" + course + "', filesource:'" + src + "', name:'" + name + "'}";
@@ -141,6 +139,33 @@ namespace Client
             {
                 Console.WriteLine(course);
             }
+        }
+
+        public bool ValidateNumber(string str)
+        {
+            foreach (char c in str)
+            {
+                if (c < '0' || c > '9')
+                    return false;
+            }
+            return true;
+        }
+        public static bool isEmpty(string s)
+        {
+            return (s == null || s == String.Empty) ? true : false;
+        }
+
+        public String setNumber()
+        {
+            var studentNum = "";
+            bool isCorrect = false;
+            while (!isCorrect)
+            {
+                Console.WriteLine("Ingrese numero:");
+                studentNum = Console.ReadLine();
+                isCorrect = ValidateNumber(studentNum) && !isEmpty(studentNum);
+            }
+            return studentNum;
         }
     }
 }

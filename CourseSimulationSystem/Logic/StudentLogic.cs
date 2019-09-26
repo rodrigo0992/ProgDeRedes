@@ -13,6 +13,10 @@ namespace Logic
     {
         private Information Information { get; set; }
 
+        public StudentLogic()
+        {
+
+        }
         public StudentLogic(Information information)
         {
             this.Information = information;
@@ -169,10 +173,57 @@ namespace Logic
             foreach (char c in str)
             {
                 if (c < '0' || c > '9')
+                {
+                    Console.WriteLine("Debe ingresar solo numeros:");
                     return false;
+                }
+                    
             }
             return true;
         }
 
+        public static bool isEmpty(string s)
+        {
+            if (s == null || s == String.Empty)
+            {
+                Console.WriteLine("El campo no puede estar vacio");
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public String setNumber(string message)
+        {
+            var studentNum = "";
+            bool isCorrect = false;
+            while (!isCorrect)
+            {
+                Console.WriteLine(message);
+                studentNum = Console.ReadLine();
+                isCorrect = ValidateStudentNumber(studentNum) && !isEmpty(studentNum);
+            }
+            return studentNum;
+        }
+
+        public String setName(string message)
+        {
+            var studentString = "";
+            bool isCorrect = false;
+            while (!isCorrect)
+            {
+                Console.WriteLine(message);
+                studentString = Console.ReadLine();
+                isCorrect = !isEmpty(studentString);
+            }
+            return studentString;
+        }
+
+        public TcpClient getUserTcpClient(Student student)
+        {
+            return Information.StudentConections.Find(x => x.student == student).tcpClient;
+        }
     }
 }

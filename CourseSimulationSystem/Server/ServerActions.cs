@@ -15,6 +15,7 @@ namespace Server
     {
         CourseLogic courseLogic;
         StudentLogic studentLogic;
+
         public ServerActions(CourseLogic courseLogic, StudentLogic studentLogic)
         {
             this.courseLogic = courseLogic;
@@ -66,23 +67,28 @@ namespace Server
 
         public void AddStudentToCourse(Student student, string course, NetworkStream networkStreamResponse)
         {
-            Course courseToSuscribe = courseLogic.getCourseByCourseName(course);
-            StudentCourse studentCourse = new StudentCourse();
-            studentCourse.Course = courseToSuscribe;
-            studentCourse.Student = student;
-            courseLogic.AddStudentToCourse(studentCourse);
-            Message.SendMessage(networkStreamResponse, "RES", 3, "Curso agregado exitosamente");
+            if (!courseLogic.CourseExists(course))
+            {
+                Message.SendMessage(networkStreamResponse, "RES", 3, "No existe ningun curso con ese nombre.");
+            }
+            else
+            {
+                Course courseToSuscribe = courseLogic.getCourseByCourseName(course);
+                StudentCourse studentCourse = new StudentCourse();
+                studentCourse.Course = courseToSuscribe;
+                studentCourse.Student = student;
+                courseLogic.AddStudentToCourse(studentCourse);
+                Message.SendMessage(networkStreamResponse, "RES", 3, "Curso agregado exitosamente");
+            }
         }
 
 
         public void AddStudent()
         {
             Console.WriteLine("CREAR USUARIO");
-            var studentNum = setStudentNumber();
-            Console.WriteLine("Ingrese nombre:");
-            var studentName = Console.ReadLine();
-            Console.WriteLine("Ingrese password:");
-            var studentPassword = Console.ReadLine();
+            var studentNum = studentLogic.setNumber("Ingrese numero de usuario");
+            var studentName = studentLogic.setName("Ingrese nombre de usuario");
+            var studentPassword = studentLogic.setName("Ingrese contrasena");
             Student newStudent = new Student();
             newStudent.StudentNum = Convert.ToInt32(studentNum);
             newStudent.Name = studentName;
@@ -99,19 +105,7 @@ namespace Server
             }
 
         }
-        private String setStudentNumber()
-        {
-            var studentNum="";
-            bool isCorrect = false;
-            while (!isCorrect)
-            {
-                Console.WriteLine("Ingrese numero de estudiante:");
-                studentNum = Console.ReadLine();
-                isCorrect= studentLogic.ValidateStudentNumber(studentNum);
-            }
-            return studentNum;
-        }
-
+            
         public void ListStudents()
         {
             Console.WriteLine("Lista de estudiantes:");
@@ -125,10 +119,8 @@ namespace Server
         public void AddCourse()
         {
             Console.WriteLine("CREAR CURSO");
-            Console.WriteLine("Indique numero del curso:");
-            var courseNumber = Console.ReadLine();
-            Console.WriteLine("Indique nombre del curso:");
-            var courseName = Console.ReadLine();
+            var courseNumber = courseLogic.setNumber("Ingrese numero de curso");
+            var courseName = courseLogic.setName("Igrese nombre de curso");
             Course newCourse = new Course();
             newCourse.CourseNum = Convert.ToInt32(courseNumber);
             newCourse.Name = courseName;
@@ -136,7 +128,6 @@ namespace Server
             {
                 this.courseLogic.AddCourse(newCourse);
                 Console.WriteLine("Curso creado con éxito");
-
             }
             catch (Exception e)
             {
@@ -159,8 +150,8 @@ namespace Server
         public void DeleteCourse()
         {
             ListCourses();
-            Console.WriteLine("Escriba el numero del curso que desea eliminar: ");
-            int numCourseToDelete= Convert.ToInt32(Console.ReadLine());
+            Console.WriteLine("Borrar curso ");
+            int numCourseToDelete= Convert.ToInt32(courseLogic.setNumber("Ingrese numero de curso:"));
             this.courseLogic.DeleteCourse(numCourseToDelete);
         }
 
@@ -267,11 +258,11 @@ namespace Server
                 {
                     Console.WriteLine("Seleccione el numero del alumno para asignar una nota:");
                     ListStudents();
-                    int studentNum = Convert.ToInt32(Console.ReadLine());
+                    int studentNum = Convert.ToInt32(studentLogic.setNumber("Ingrese numero de estudiante:"));
                     Student student = studentLogic.GetStudentByStudentNum(studentNum);
                     Console.WriteLine("Seleccione el curso al que desea asignar una nota:");
                     ListCourses();
-                    int courseNum = Convert.ToInt32(Console.ReadLine());
+                    int courseNum = Convert.ToInt32(studentLogic.setNumber("Seleccione numero de curso:"));
                     Course course = courseLogic.getCourseByCourseNumber(courseNum);
 
                     Console.WriteLine("Tiene los siguientes materiales para asignar nota, seleccione uno:");
@@ -280,7 +271,7 @@ namespace Server
                     var fileName = Console.ReadLine();
 
                     Console.WriteLine("Asigne una nota al material seleccionado:");
-                    int grade = Convert.ToInt32(Console.ReadLine());
+                    int grade = Convert.ToInt32(studentLogic.setNumber("Indicar nota:"));
 
                     studentLogic.AssignGrade(student,course,fileName,grade);
 
@@ -289,7 +280,10 @@ namespace Server
                     var answer = Console.ReadLine().ToLower();
                     if (answer == "s")
                     {
-
+                        //TcpClient studentTcpClient = studentLogic.getUserTcpClient(student);
+                        //var networkStream = studentTcpClient.GetStream();
+                        //var data = "Su nota en " + course.Name + "ha sido " + grade.ToString();
+                        //Message.SendMessage(networkStream, "RES", , data);
                         Console.WriteLine("Se notificó al alumno");
                     }
                     else {

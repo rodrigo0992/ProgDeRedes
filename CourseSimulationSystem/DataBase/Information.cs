@@ -117,6 +117,11 @@ namespace DataBase
             }
         }
 
+        public bool CourseExists(string courseName)
+        {
+            return this.Courses.Exists(x => x.Name == courseName);
+           
+        }
         public void DeleteStudentConection(Student student)
         {
             if (ExistStudentConection(student))
