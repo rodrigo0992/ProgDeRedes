@@ -12,6 +12,8 @@ namespace Logic
     {
         private Information Information { get; set; }
 
+        private readonly object StudentCourseLock = new object();
+
         public CourseLogic()
         {
 
@@ -21,17 +23,9 @@ namespace Logic
             this.Information = information;
         }
 
-        public Course AddCourse(Course course)
+        public void AddCourse(Course course)
         {
-            try
-            {
-                this.Information.AddCourse(course);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            return course;
+            this.Information.AddCourse(course);
         }
 
         public List<Course> GetCourses()
@@ -63,7 +57,10 @@ namespace Logic
         }
         public void DeleteCourse(int courseIndex)
         {
-            this.Information.DeleteCourse(courseIndex);
+            lock (StudentCourseLock)
+            {
+                this.Information.DeleteCourse(courseIndex);
+            }
         }
         public bool existsStudentsAndCourses()
         {
@@ -71,7 +68,10 @@ namespace Logic
         }
         public void AddStudentToCourse(StudentCourse studentCourse)
         {
-            this.Information.AddStrudentCourse(studentCourse);
+            lock (StudentCourseLock)
+            {
+                this.Information.AddStrudentCourse(studentCourse);
+            }
         }
 
         public List<Course> GetAvailablesCourses(Student student)

@@ -14,6 +14,8 @@ namespace Logic
     {
         private Information Information { get; set; }
 
+        private readonly object StudentConectionLock = new object();
+
         public StudentLogic()
         {
 
@@ -28,18 +30,11 @@ namespace Logic
             return "";
         }
 
-        public Student AddStudent(Student student)
+        public void AddStudent(Student student)
         {
-            try
-            {
-                this.Information.AddStudent(student);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            
-            return student;
+
+            this.Information.AddStudent(student);
+
         }  
         
         public List<Student> GetStudents()
@@ -147,38 +142,50 @@ namespace Logic
 
         public void AddStudentConection(Student student, TcpClient tcpClient)
         {
-            try
+            lock (StudentConectionLock)
             {
-                Information.AddStudentConection(student,tcpClient);
+                try
+                {
+                    Information.AddStudentConection(student, tcpClient);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception(e.Message);
+                }
             }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
+
         }
 
         public void DeleteStudentConection(Student student)
         {
-            try
+            lock (StudentConectionLock)
             {
-                Information.DeleteStudentConection(student);
+                try
+                {
+                    Information.DeleteStudentConection(student);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception(e.Message);
+                }
             }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
+
         }
 
         public StudentSocket GetStudentSocket(Student student)
         {
-            try
+            lock (StudentConectionLock)
             {
-                return Information.GetStudentSocket(student);
+                try
+                {
+                    return Information.GetStudentSocket(student);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception(e.Message);
+                }
             }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message);
-            }
+
         }
 
         public bool ValidateStudentNumber(string str)
