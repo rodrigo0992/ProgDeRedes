@@ -43,7 +43,7 @@ namespace Server
                 {
                     try
                     {
-                        studentToLogin = this.studentLogic.GetStudentByStudentNum(student);
+                        studentToLogin = this.studentLogic.GetStudentByStudentNumOrEmail(student);
                         studentLogic.AddStudentConection(studentToLogin, tcpClient);
                         if (studentToLogin.Password == password)
                         {
@@ -77,7 +77,7 @@ namespace Server
 
         public void AddStudentToCourse(Student student, string course, NetworkStream networkStreamResponse)
         {
-            if (!courseLogic.CourseExists(course))
+            if (!courseLogic.CourseExistsByName(course))
             {
                 Message.SendMessage(networkStreamResponse, "RES", 3, "No existe ningun curso con ese nombre.");
             }
@@ -95,22 +95,22 @@ namespace Server
 
         public void AddStudent()
         {
-            Console.WriteLine("CREAR USUARIO");
-            var studentNum = studentLogic.setNumber("Ingrese numero de usuario");
-            var studentName = studentLogic.setName("Ingrese nombre de usuario");
-            var studentSurname = studentLogic.setName("Ingrese apellido");
-            Console.WriteLine("Ingrese mail:");
-            var mail= Console.ReadLine();
-            var studentMail = studentLogic.ValidateUserMail(mail);
-            var studentPassword = studentLogic.setName("Ingrese contrasena");
-            Student newStudent = new Student();
-            newStudent.StudentNum = Convert.ToInt32(studentNum);
-            newStudent.Name = studentName;
-            newStudent.Password = studentPassword;
-            newStudent.SurName = studentSurname;
-            newStudent.Mail = mail;
             try
             {
+                Console.WriteLine("CREAR USUARIO");
+                var studentNum = studentLogic.setNumber("Ingrese número de usuario");
+                var studentName = studentLogic.setName("Ingrese nombre de usuario");
+                var studentSurname = studentLogic.setName("Ingrese apellido");
+                Console.WriteLine("Ingrese mail:");
+                var mail= Console.ReadLine();
+                var studentMail = studentLogic.ValidateUserMail(mail);
+                var studentPassword = studentLogic.setName("Ingrese contraseña");
+                Student newStudent = new Student();
+                newStudent.StudentNum = Convert.ToInt32(studentNum);
+                newStudent.Name = studentName;
+                newStudent.Password = studentPassword;
+                newStudent.SurName = studentSurname;
+                newStudent.Mail = mail;
                 this.studentLogic.AddStudent(newStudent);
                 Console.WriteLine("Usuario creado con éxito");
 
@@ -128,33 +128,44 @@ namespace Server
             var students = this.studentLogic.GetStudents();
             foreach (Student item in students)
             {
-                Console.WriteLine(item.StudentNum);
+                Console.WriteLine(item.StudentNum + " - " + item.Name + " " + item.SurName + " - " + item.Mail);
             }
         }
 
         public void AddCourse()
         {
-            Console.WriteLine("CREAR CURSO");
-            var courseNumber = courseLogic.setNumber("Ingrese numero de curso");
-            var courseName = courseLogic.setName("Igrese nombre de curso");
-            Course newCourse = new Course();
-            newCourse.CourseNum = Convert.ToInt32(courseNumber);
-            newCourse.Name = courseName;
             try
             {
-                this.courseLogic.AddCourse(newCourse);
+                Console.WriteLine("CREAR CURSO");
+                var courseNumber = courseLogic.setNumber("Ingrese numero de curso");
+                var courseName = courseLogic.setName("Igrese nombre de curso");
+                Course newCourse = new Course();
+                newCourse.CourseNum = Convert.ToInt32(courseNumber);
+                newCourse.Name = courseName;
+                courseLogic.AddCourse(newCourse);
                 Console.WriteLine("Curso creado con éxito");
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
+
         }
 
-        public void ListCourses()
+        public void ListAllCourses()
         {
             Console.WriteLine("Lista de cursos:");
-            var courses = this.courseLogic.GetCourses();
+            var courses = courseLogic.GetCourses();
+            foreach (Course course in courses)
+            {
+                Console.WriteLine(course.CourseNum + " - " + course.Name);
+            }
+        }
+
+        public void ListCourses(List<Course> courses)
+        {
+            Console.WriteLine("Lista de cursos:");
+            
             foreach (Course course in courses)
             {
                 Console.WriteLine(course.CourseNum + " - " + course.Name);
@@ -163,10 +174,19 @@ namespace Server
 
         public void DeleteCourse()
         {
-            ListCourses();
-            Console.WriteLine("Borrar curso ");
-            int numCourseToDelete= Convert.ToInt32(courseLogic.setNumber("Ingrese numero de curso:"));
-            this.courseLogic.DeleteCourse(numCourseToDelete);
+            try
+            {
+                var courses = this.courseLogic.GetCourses();
+                ListCourses(courses);
+                Console.WriteLine("Borrar curso ");
+                int numCourseToDelete = Convert.ToInt32(courseLogic.setNumber("Ingrese numero de curso:"));
+                this.courseLogic.DeleteCourse(numCourseToDelete);
+                Console.WriteLine("Curso eliminado exitosamente");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
         }
 
         public void AssignStudentToCourse()
@@ -177,19 +197,21 @@ namespace Server
             }
             else
             {
-                Console.WriteLine("Seleccione el numero del alumno:");
-                ListStudents();
-                var studentNum = Console.ReadLine();
-                Student student = studentLogic.GetStudentByStudentNum(studentNum);
-                Console.WriteLine("Seleccione el curso al que desea inscribir al alumno:");
-                ListCourses();
-                int courseNum = Convert.ToInt32(Console.ReadLine());
-                Course course = courseLogic.getCourseByCourseNumber(courseNum);
-                StudentCourse studentCourse = new StudentCourse();
-                studentCourse.Course = course;
-                studentCourse.Student = student;
                 try
                 {
+                    Console.WriteLine("Seleccione el numero del alumno:");
+                    ListStudents();
+                    var studentNum = Console.ReadLine();
+                    Student student = studentLogic.GetStudentByStudentNumOrEmail(studentNum);
+                    Console.WriteLine("Seleccione el curso al que desea inscribir al alumno:");
+                    var courses = courseLogic.GetAvailablesCourses(student);
+                    ListCourses(courses);
+                    int courseNum = Convert.ToInt32(Console.ReadLine());
+                    Course course = courseLogic.getCourseByCourseNumber(courseNum);
+                    StudentCourse studentCourse = new StudentCourse();
+                    studentCourse.Course = course;
+                    studentCourse.Student = student;
+
                     this.courseLogic.AddStudentToCourse(studentCourse);
                     Console.WriteLine("Usuario " + student.Name + " agregado a curso " + course.Name + " existosamente");
 
@@ -273,9 +295,10 @@ namespace Server
                     Console.WriteLine("Seleccione el numero del alumno para asignar una nota:");
                     ListStudents();
                     var studentNum = studentLogic.setName("Ingrese numero de estudiante:");
-                    Student student = studentLogic.GetStudentByStudentNum(studentNum);
+                    Student student = studentLogic.GetStudentByStudentNumOrEmail(studentNum);
                     Console.WriteLine("Seleccione el curso al que desea asignar una nota:");
-                    ListCourses();
+                    var courses = courseLogic.GetEnrolledCourses(student);
+                    ListCourses(courses);
                     int courseNum = Convert.ToInt32(studentLogic.setNumber("Seleccione numero de curso:"));
                     Course course = courseLogic.getCourseByCourseNumber(courseNum);
 

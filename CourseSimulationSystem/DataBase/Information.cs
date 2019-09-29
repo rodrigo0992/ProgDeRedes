@@ -25,18 +25,43 @@ namespace DataBase
 
         public void AddStudent(Student student)
         {
-            //if (GetStudentByStudentNum(student.StudentNum) != null)
-            //    throw new Exception("El estudiante con " + student.StudentNum + " ya existe en el sistema");
-            //if (GetStudentByMail(student.Mail) != null)
-            //   throw new Exception("El estudiante con " + student.Mail + " ya existe en el sistema");           
+            string studentNum = student.StudentNum.ToString();
+            string mail = student.Mail;
+
+            if (StudentExists(studentNum))
+                throw new Exception("El estudiante con número " + studentNum + " ya existe");
+
+            if (StudentExists(mail))
+                throw new Exception("El estudiante con mail " + mail + " ya existe");
+
             this.Students.Add(student);
         }
 
         public void AddCourse(Course course)
         {
-            this.Courses.Add(course);
+            string courseName = course.Name;
+            int courseNum = course.CourseNum;
+
+            if (CourseExistsByName(courseName))
+                throw new Exception("El curso con nombre " + courseName + " ya existe");
+
+            if (CourseExistsByNumber(courseNum))
+                throw new Exception("El curso con número " + courseNum + " ya existe");
+
+            try
+            {
+                Course courseToReinsert = GetDeletedCourseByCourseNumber(courseNum);
+                courseToReinsert = GetDeletedCourseByCourseName(courseName);
+                courseToReinsert.Deleted = false;
+                Console.WriteLine("El curso fue reactivado al igual que todas sus dependencias");
+            }
+            catch(Exception e)
+            {
+                this.Courses.Add(course);
+            }
+
         }
-        public void AddStrudentCourse(StudentCourse studentCourse)
+        public void AddStudentCourse(StudentCourse studentCourse)
         {
             this.StudentCourses.Add(studentCourse);
         }
@@ -61,7 +86,7 @@ namespace DataBase
             }
         }
 
-        public Student GetStudentByStudentNum(string studentNum)
+        public Student GetStudentByStudentNumOrEmail(string studentNum)
         {
             try
             {
@@ -77,42 +102,60 @@ namespace DataBase
 
         public Course GetCourseByCourseNumber(int courseNum)
         {
-            var courseToReturn = this.Courses.First(x => x.CourseNum == courseNum);
+            var courseToReturn = this.Courses.First(x => x.CourseNum == courseNum && x.Deleted == false);
             return courseToReturn;
         }
         public Course GetCourseByCourseName(string courseName)
         {
-            var courseToReturn = this.Courses.First(x => x.Name.Equals(courseName));
+            var courseToReturn = this.Courses.First(x => x.Name.Equals(courseName) && x.Deleted == false);
             return courseToReturn;
         }
 
-        public Student GetStudentByMail(string mail)
+        public Course GetDeletedCourseByCourseNumber(int courseNum)
         {
-            var studentToReturn = this.Students.First(x => x.Mail == mail);
-            return studentToReturn;
+            var courseToReturn = this.Courses.First(x => x.CourseNum == courseNum );
+            return courseToReturn;
+        }
+        public Course GetDeletedCourseByCourseName(string courseName)
+        {
+            var courseToReturn = this.Courses.First(x => x.Name.Equals(courseName) );
+            return courseToReturn;
+        }
+
+        public bool CourseExistsByName(string courseName)
+        {
+            return this.Courses.Exists(x => x.Name == courseName && x.Deleted == false);
+        }
+
+        public bool CourseExistsByNumber(int courseNumber)
+        {
+            return this.Courses.Exists(x => x.CourseNum == courseNumber && x.Deleted == false);
         }
 
         public void DeleteCourse(int courseNum)
         {
-            bool searching = true;
-            for (int i = Courses.Count - 1; i >= 0 && searching; i--)
-            {
-                if (Courses[i].CourseNum == courseNum)
-                {
-                    Courses.RemoveAt(i);
-                    searching = false;
-                }
-            }
-            Console.WriteLine("El curso no existe.");
+            Course courseToDelete = Courses.First(x => x.CourseNum == courseNum);
+            courseToDelete.Deleted = true;
         }
         public bool existsStudentsAndCourses()
         {
-            return (this.Courses.Count > 0 && this.Students.Count > 0);
+            List<Course> coursesNotDeleted = this.Courses.FindAll(x=> x.Deleted == false);
+            return (coursesNotDeleted.Count > 0 && this.Students.Count > 0);
         }
 
         public List<StudentCourse> GetStudentCourses()
         {
-            return StudentCourses;
+            return StudentCourses.FindAll(x => x.Course.Deleted == false);
+        }
+
+        public List<Course> GetCourses()
+        {
+            return Courses.FindAll(x => x.Deleted == false);
+        }
+
+        public List<Student> GetStudents()
+        {
+            return Students;
         }
 
         public bool ExistStudentConection(Student student)
@@ -133,11 +176,6 @@ namespace DataBase
             }
         }
 
-        public bool CourseExists(string courseName)
-        {
-            return this.Courses.Exists(x => x.Name == courseName);
-           
-        }
         public void DeleteStudentConection(Student student)
         {
             if (ExistStudentConection(student))

@@ -27,7 +27,14 @@ namespace Logic
         public void AddCourse(Course course)
         {
             lock (CourseLock){
-                this.Information.AddCourse(course);
+                try
+                {
+                    this.Information.AddCourse(course);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception(e.Message);
+                }
             }
         }
 
@@ -35,7 +42,7 @@ namespace Logic
         {
             lock (CourseLock)
             {
-                return this.Information.Courses;
+                return this.Information.GetCourses();
             }
         }
 
@@ -43,7 +50,14 @@ namespace Logic
         {
             lock (CourseLock)
             {
-                return this.Information.GetCourseByCourseNumber(number);
+                try
+                {
+                    return this.Information.GetCourseByCourseNumber(number);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("No se puede encontrar el curso con el número: " + number);
+                }
             }
         }
 
@@ -62,18 +76,25 @@ namespace Logic
             }
         }
 
-        public bool CourseExists(string courseName)
+        public bool CourseExistsByName(string courseName)
         {
             lock (CourseLock)
             {
-                return this.Information.CourseExists(courseName);
+                return this.Information.CourseExistsByName(courseName);
             }
         }
         public void DeleteCourse(int courseIndex)
         {
             lock (StudentCourseLock)
             {
-                this.Information.DeleteCourse(courseIndex);
+                try
+                {
+                    this.Information.DeleteCourse(courseIndex);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("No se encuentra curso para borrar");
+                }
             }
         }
         public bool existsStudentsAndCourses()
@@ -84,7 +105,7 @@ namespace Logic
         {
             lock (StudentCourseLock)
             {
-                this.Information.AddStrudentCourse(studentCourse);
+                this.Information.AddStudentCourse(studentCourse);
             }
         }
 

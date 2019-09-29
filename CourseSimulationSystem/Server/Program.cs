@@ -136,7 +136,7 @@ namespace Server
                     serverActions.AddCourse();
                     break;
                 case 4:
-                    serverActions.ListCourses();
+                    serverActions.ListAllCourses();
                     break;
                 case 5:
                     serverActions.DeleteCourse();

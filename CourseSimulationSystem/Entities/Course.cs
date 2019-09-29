@@ -10,5 +10,11 @@ namespace Entities
     {
         public int CourseNum { get; set; }
         public string Name { get; set; }
+        public bool Deleted { get; set; }
+
+        public Course()
+        {
+            Deleted = false;
+        }
     }
 }

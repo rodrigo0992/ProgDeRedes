@@ -28,21 +28,35 @@ namespace Logic
 
         public void AddStudent(Student student)
         {
-            this.Information.AddStudent(student);
+            try
+            {
+                this.Information.AddStudent(student);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }  
         
         public List<Student> GetStudents()
         {
-            return this.Information.Students;
+            return this.Information.GetStudents();
         }
 
         public bool StudentExists(string number)
         {
             return this.Information.StudentExists(number);
         }
-        public Student GetStudentByStudentNum(string number)
+        public Student GetStudentByStudentNumOrEmail(string number)
         {
-            return this.Information.GetStudentByStudentNum(number);
+            try
+            {
+                return this.Information.GetStudentByStudentNumOrEmail(number);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("No se encuentra el estudiante con número/email: " + number);
+            }
         }
 
         public void AddStudentCourseFile(Student student, Course course, File file)
