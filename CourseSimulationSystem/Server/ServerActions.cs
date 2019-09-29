@@ -204,7 +204,7 @@ namespace Server
 
         public void GetEnrolledCourses(Student student,NetworkStream networkStreamResponse)
         {
-            var enrolledCourses = this.studentLogic.GetEnrolledCourses(student);
+            var enrolledCourses = this.courseLogic.GetEnrolledCourses(student);
             var courseList = courseLogic.prepareCourseListResponse(enrolledCourses);
             Message.SendMessage(networkStreamResponse, "RES", 4, courseList);
         }

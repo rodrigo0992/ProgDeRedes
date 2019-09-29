@@ -25,16 +25,10 @@ namespace Logic
             this.Information = information;
         }
 
-        public string Login(Student student)
-        {
-            return "";
-        }
 
         public void AddStudent(Student student)
         {
-
             this.Information.AddStudent(student);
-
         }  
         
         public List<Student> GetStudents()
@@ -51,21 +45,8 @@ namespace Logic
             return this.Information.GetStudentByStudentNum(number);
         }
 
-        public List<Course> GetEnrolledCourses(Student student)
-        {
-            var studentCourses = Information.GetStudentCourses().Where(x=>x.Student==student).ToList();
-            var listToReturn = new List<Course>();
-            foreach (var item in studentCourses)
-            {
-                listToReturn.Add(item.Course); 
-            }
-            return listToReturn;
-        }
-
         public void AddStudentCourseFile(Student student, Course course, File file)
         {
-
-
             try
             {
                 var studentCourse = Information.GetStudentCourses().Find(x => (x.Student == student && x.Course == course));

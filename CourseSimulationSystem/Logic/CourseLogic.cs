@@ -13,6 +13,7 @@ namespace Logic
         private Information Information { get; set; }
 
         private readonly object StudentCourseLock = new object();
+        private readonly object CourseLock = new object();
 
         public CourseLogic()
         {
@@ -25,35 +26,48 @@ namespace Logic
 
         public void AddCourse(Course course)
         {
-            this.Information.AddCourse(course);
+            lock (CourseLock){
+                this.Information.AddCourse(course);
+            }
         }
 
         public List<Course> GetCourses()
         {
-            return this.Information.Courses;
+            lock (CourseLock)
+            {
+                return this.Information.Courses;
+            }
         }
 
         public Course getCourseByCourseNumber(int number)
         {
-            return this.Information.GetCourseByCourseNumber(number);
+            lock (CourseLock)
+            {
+                return this.Information.GetCourseByCourseNumber(number);
+            }
         }
 
         public Course getCourseByCourseName(string name)
         {
-            try
-            {
-            return Information.GetCourseByCourseName(name);
+            lock (CourseLock) {
+                try
+                {
+                    return Information.GetCourseByCourseName(name);
 
-            }
-            catch (Exception e)
-            {
-                throw new Exception("No se puedo obtener el curso de nombre: " + name);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception("No se puedo obtener el curso de nombre: " + name);
+                }
             }
         }
 
         public bool CourseExists(string courseName)
         {
-            return this.Information.CourseExists(courseName);
+            lock (CourseLock)
+            {
+                return this.Information.CourseExists(courseName);
+            }
         }
         public void DeleteCourse(int courseIndex)
         {
@@ -76,16 +90,34 @@ namespace Logic
 
         public List<Course> GetAvailablesCourses(Student student)
         {
-            var studentCourses = Information.GetStudentCourses().Where(x => x.Student == student).ToList();
-            var coursesOfStudent = new List<Course>();
-            foreach (var item in studentCourses)
+            lock (StudentCourseLock)
             {
-                coursesOfStudent.Add(item.Course);
+                var studentCourses = Information.GetStudentCourses().Where(x => x.Student == student).ToList();
+                var coursesOfStudent = new List<Course>();
+                foreach (var item in studentCourses)
+                {
+                    coursesOfStudent.Add(item.Course);
+                }
+
+                var allCourses = GetCourses();
+
+                return allCourses.Except(coursesOfStudent).ToList();
             }
 
-            var allCourses = GetCourses();
+        }
 
-            return allCourses.Except(coursesOfStudent).ToList();
+        public List<Course> GetEnrolledCourses(Student student)
+        {
+            lock (StudentCourseLock)
+            {
+                var studentCourses = Information.GetStudentCourses().Where(x => x.Student == student).ToList();
+                var listToReturn = new List<Course>();
+                foreach (var item in studentCourses)
+                {
+                    listToReturn.Add(item.Course);
+                }
+                return listToReturn;
+            }
         }
 
         public string prepareCourseListResponse(List<Course> courses)
