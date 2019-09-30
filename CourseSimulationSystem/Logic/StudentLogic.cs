@@ -135,13 +135,13 @@ namespace Logic
             return response;
         }
 
-        public void AddStudentConection(Student student, TcpClient tcpClient)
+        public void AddStudentConection(Student student, TcpClient tcpClient, TcpClient tcpClientBackground)
         {
             lock (StudentConectionLock)
             {
                 try
                 {
-                    Information.AddStudentConection(student, tcpClient);
+                    Information.AddStudentConection(student, tcpClient, tcpClientBackground);
                 }
                 catch (Exception e)
                 {
@@ -165,6 +165,21 @@ namespace Logic
                 }
             }
 
+        }
+
+        public void ClearStudentConections()
+        {
+            lock (StudentConectionLock)
+            {
+                try
+                {
+                    Information.ClearStudentSockets();
+                }
+                catch (Exception e)
+                {
+                    throw new Exception(e.Message);
+                }
+            }
         }
 
         public StudentSocket GetStudentSocket(Student student)
@@ -250,7 +265,7 @@ namespace Logic
 
         public TcpClient getUserTcpClient(Student student)
         {
-            return Information.StudentConections.Find(x => x.student == student).tcpClient;
+            return Information.StudentConections.Find(x => x.student == student).tcpClientBackground;
         }
     }
 }

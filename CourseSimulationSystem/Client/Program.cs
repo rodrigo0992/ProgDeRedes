@@ -16,52 +16,70 @@ namespace Client
     {
         private static bool clientRunning = true;
         public static List<String> notifications = new List<String>();
+        public static Thread backgroundThread;
+        public static TcpClient tcpClient;
+        public static TcpClient tcpClientBackground;
 
         static void Main(string[] args)
         {
+            try
+            {
 
-            string ipServer = ConfigurationManager.AppSettings["ipServer"];
-            string ipClient = ConfigurationManager.AppSettings["ipClient"];
-            int port = Convert.ToInt32(ConfigurationManager.AppSettings["port"]);
-            int portBack = Convert.ToInt32(ConfigurationManager.AppSettings["portBack"]);
+                string ipServer = ConfigurationManager.AppSettings["ipServer"];
+                string ipClient = ConfigurationManager.AppSettings["ipClient"];
+                int port = Convert.ToInt32(ConfigurationManager.AppSettings["port"]);
+                int portBack = Convert.ToInt32(ConfigurationManager.AppSettings["portBack"]);
 
-            var tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(ipClient), 0));
-            tcpClient.Connect(IPAddress.Parse(ipServer), port);
-            var networkStream = tcpClient.GetStream();
-            var studentLogic = new StudentLogic();
-            var courseLogic = new CourseLogic();
+                tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(ipClient), 0));
+                tcpClient.Connect(IPAddress.Parse(ipServer), port);
+                var networkStream = tcpClient.GetStream();
+                var studentLogic = new StudentLogic();
+                var courseLogic = new CourseLogic();
 
-            var tcpClientBackground = new TcpClient(new IPEndPoint(IPAddress.Parse(ipClient), 0));
-            tcpClientBackground.Connect(IPAddress.Parse(ipServer), portBack);
-            var networkStreamBackground = tcpClientBackground.GetStream();
-            var threadClient = new Thread(() => {
+                tcpClientBackground = new TcpClient(new IPEndPoint(IPAddress.Parse(ipClient), 0));
+                tcpClientBackground.Connect(IPAddress.Parse(ipServer), portBack);
+                var networkStreamBackground = tcpClientBackground.GetStream();
+                backgroundThread = new Thread(() => {
+                    while (clientRunning)
+                    {
+                        try
+                        {
+                            var protocolPackage = Message.ReceiveMessage(networkStreamBackground);
+                            notifications.Add(protocolPackage.Data);
+                        }catch(Exception e)
+                        {
+                            clientRunning = false;
+                        }
+                    }
+                });
+                backgroundThread.Start();
+
+                ClientActions clientActions = new ClientActions(networkStream, courseLogic, studentLogic);
+
+                Console.WriteLine("Bienvenido a Aulas");
+                Console.WriteLine("Continue para iniciar sesión");
+                Console.ReadLine();
+
+                bool correctLogin = false;
+                while (!correctLogin)
+                    correctLogin = clientActions.Login();
+
+                Menu(clientActions);
                 while (clientRunning)
                 {
-                    var protocolPackage = Message.ReceiveMessage(networkStreamBackground);
-
-                    notifications.Add(protocolPackage.Data);
+                    Menu(clientActions);
                 }
-            });
-            threadClient.Start();
+                CloseClient();
 
-            ClientActions clientActions = new ClientActions(networkStream, courseLogic, studentLogic);
-
-            Console.WriteLine("Bienvenido a Aulas");
-            Console.WriteLine("Continue para iniciar sesión");
-            Console.ReadLine();
-
-            bool correctLogin = false;
-            while(!correctLogin)
-                correctLogin = clientActions.Login();
-            
-            Menu(clientActions);
-            while (clientRunning)
+            }
+            catch (Exception e)
             {
-                Menu(clientActions);
+                Console.WriteLine("Error de conexión con el servidor, reinicie la aplicación");
+                Console.ReadKey();
+                Environment.Exit(1);
             }
 
-            //networkStream.Close();
-            //tcpClient.Dispose();
+
         }
 
         private static void Menu(ClientActions clientActions)
@@ -101,6 +119,7 @@ namespace Client
             Console.WriteLine("2- Cursos inscripto");
             Console.WriteLine("3- Subir material a curso");
             Console.WriteLine("4- Materiales subidos a curso");
+            Console.WriteLine("5- Salir");
             var opcion = Console.ReadLine();
 
             switch (Convert.ToInt32(opcion))
@@ -117,6 +136,9 @@ namespace Client
                 case 4:
                     clientActions.GetFiles();
                     break;
+                case 5:
+                    clientRunning = !clientActions.DiscontectFromServer();
+                    break;
                 default:
                     Console.WriteLine("Debe seleccionar una opción correcta");
                     break;
@@ -125,6 +147,13 @@ namespace Client
             Console.WriteLine("");
         }
 
+        private static void CloseClient()
+        {
+            Console.WriteLine("Se encuentra desconectado");
+            Console.ReadKey();
+            Environment.Exit(1);
+
+        }
 
 
     }

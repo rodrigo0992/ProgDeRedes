@@ -11,11 +11,13 @@ namespace Entities
     {
         public Student student;
         public TcpClient tcpClient;
+        public TcpClient tcpClientBackground;
 
-        public StudentSocket(Student student, TcpClient tcpClient)
+        public StudentSocket(Student student, TcpClient tcpClient, TcpClient tcpClientBackground)
         {
             this.student = student;
             this.tcpClient = tcpClient;
+            this.tcpClientBackground = tcpClientBackground;
         }
     }
 }

@@ -26,7 +26,7 @@ namespace Server
         }
 
         // Start response server methods
-        public Student Login(string data, NetworkStream networkStreamResponse, TcpClient tcpClient)
+        public Student Login(string data, NetworkStream networkStreamResponse, TcpClient tcpClient, TcpClient tcpClientBackground)
         {
             var studentToLogin = new Student();
             try
@@ -44,7 +44,7 @@ namespace Server
                     try
                     {
                         studentToLogin = this.studentLogic.GetStudentByStudentNumOrEmail(student);
-                        studentLogic.AddStudentConection(studentToLogin, tcpClient);
+                        studentLogic.AddStudentConection(studentToLogin, tcpClient, tcpClientBackground);
                         if (studentToLogin.Password == password)
                         {
                             Message.SendMessage(networkStreamResponse, "RES", 1, "Password correcta");
@@ -317,7 +317,7 @@ namespace Server
                     try
                     {
                         var studentSocket = studentLogic.GetStudentSocket(student);
-                        var networStream = studentSocket.tcpClient.GetStream();
+                        var networStream = studentSocket.tcpClientBackground.GetStream();
                         var notification = course.Name + ";" + fileName + ";" + grade;
                         Message.SendMessage(networStream, "REQ", 0, notification);
 
@@ -381,6 +381,31 @@ namespace Server
             catch(Exception e)
             {
                 Message.SendMessage(networkStreamResponse, "RES", 9, "FAIL");
+            }
+        }
+
+        public void DisconectClient(Student student,NetworkStream networkStreamResponse)
+        {
+            try
+            {
+                studentLogic.DeleteStudentConection(student);
+                Message.SendMessage(networkStreamResponse, "RES", 10, "OK");
+            }
+            catch (Exception e)
+            {
+                Message.SendMessage(networkStreamResponse, "RES", 10, "FAIL");
+            }
+        }
+
+        public void ClearStudentConections()
+        {
+            try
+            {
+                studentLogic.ClearStudentConections();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
     }

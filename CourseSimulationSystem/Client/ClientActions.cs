@@ -25,7 +25,7 @@ namespace Client
         public bool Login()
         {
             var studentNum = studentLogic.setName("Ingrese su numero de usuario o mail");
-            var studentPassword = studentLogic.setName("Ingrese su contrasena");
+            var studentPassword = studentLogic.setName("Ingrese su contraseña");
 
             var data = studentNum + ";" + studentPassword;
 
@@ -203,6 +203,20 @@ namespace Client
             }
 
             return exito;
+        }
+
+        public bool DiscontectFromServer()
+        {
+            bool disconected = true;
+            Message.SendMessage(networkStream, "REQ", 10, "");
+            var protocolPackageResponse = Message.ReceiveMessage(networkStream);
+
+            if (protocolPackageResponse.Data != "OK")
+            {
+                Console.WriteLine("Error al desconectarse del sistema");
+                disconected = false;
+            }
+            return disconected;
         }
 
         public void ShowCourses(string courseList)

@@ -163,11 +163,11 @@ namespace DataBase
             return StudentConections.Exists(x => x.student == student);
         }
 
-        public void AddStudentConection(Student student, TcpClient tcpClient)
+        public void AddStudentConection(Student student, TcpClient tcpClient, TcpClient tcpClientBackground)
         {
             if (!ExistStudentConection(student))
             {
-                StudentSocket studentSocket = new StudentSocket(student, tcpClient);
+                StudentSocket studentSocket = new StudentSocket(student, tcpClient, tcpClientBackground);
                 StudentConections.Add(studentSocket);
             }
             else
@@ -178,12 +178,13 @@ namespace DataBase
 
         public void DeleteStudentConection(Student student)
         {
-            if (ExistStudentConection(student))
+            try
             {
                 var studentSocket = StudentConections.First(x => x.student == student);
+
                 StudentConections.Remove(studentSocket);
             }
-            else
+            catch (Exception e)
             {
                 throw new Exception("No se puede borrar conexión de estudiante no conectado");
             }
@@ -199,6 +200,16 @@ namespace DataBase
             {
                 throw new Exception("No se puede obtener conexión de estudiante no conectado");
             }
+        }
+
+        public void ClearStudentSockets()
+        {
+            foreach (var item in StudentConections)
+            {
+                item.tcpClientBackground.Dispose();
+                item.tcpClient.Dispose();
+            }
+            StudentConections.Clear();
         }
     }
 }

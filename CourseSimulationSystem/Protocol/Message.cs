@@ -19,7 +19,7 @@ namespace Protocol
                 var received = networkStream.Read(dataBytes, totalReceivedData, length - totalReceivedData);
                 if (received == 0)
                 {
-                    //bum
+                    throw new Exception("Error al recibir datos");
                 }
                 totalReceivedData += received;
             }
@@ -28,28 +28,34 @@ namespace Protocol
 
         public static ProtocolPackage ReceiveMessage(NetworkStream networkStream)
         {
-            //header
-            var headerBytes = new byte[3];
-            ReadDataFromStream(3, networkStream, headerBytes);
-            var header = Encoding.UTF8.GetString(headerBytes);
+            try
+            {
+                //header
+                var headerBytes = new byte[3];
+                ReadDataFromStream(3, networkStream, headerBytes);
+                var header = Encoding.UTF8.GetString(headerBytes);
 
-            //cmd
-            var cmdBytes = new byte[4];
-            ReadDataFromStream(4, networkStream, cmdBytes);
-            var cmd = BitConverter.ToInt32(cmdBytes, 0);
+                //cmd
+                var cmdBytes = new byte[4];
+                ReadDataFromStream(4, networkStream, cmdBytes);
+                var cmd = BitConverter.ToInt32(cmdBytes, 0);
 
-            //lenght
-            var lenghtBytes = new byte[4];
-            ReadDataFromStream(4, networkStream, lenghtBytes);
-            var lenght = BitConverter.ToInt32(lenghtBytes, 0);
+                //lenght
+                var lenghtBytes = new byte[4];
+                ReadDataFromStream(4, networkStream, lenghtBytes);
+                var lenght = BitConverter.ToInt32(lenghtBytes, 0);
 
-            //data
-            var dataBytes = new byte[lenght];
-            ReadDataFromStream(lenght, networkStream, dataBytes);
-            var data = Encoding.UTF8.GetString(dataBytes);
+                //data
+                var dataBytes = new byte[lenght];
+                ReadDataFromStream(lenght, networkStream, dataBytes);
+                var data = Encoding.UTF8.GetString(dataBytes);
 
-            return new ProtocolPackage(header, cmd, lenght, data);
-
+                return new ProtocolPackage(header, cmd, lenght, data);
+            }
+            catch (Exception e)
+            {
+                throw new Exception(e.Message);
+            }
         }
 
         public static void SendMessage(NetworkStream networkStream, string header, int cmd, string data)
