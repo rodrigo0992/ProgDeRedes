@@ -96,12 +96,24 @@ namespace Client
                 var name = courseLogic.setName("Ingrese el nombre del material:");
                 var src = courseLogic.setName("Ingrese src al material");
 
-                if (SendFile(src))
-                {
-                    var data = course + ";" + src + ";" + name;
-                    Message.SendMessage(networkStream, "REQ", 5, data);
 
-                    protocolPackageResponse = Message.ReceiveMessage(networkStream);
+                var data = course + ";" + src + ";" + name;
+                Message.SendMessage(networkStream, "REQ", 5, data);
+
+                protocolPackageResponse = Message.ReceiveMessage(networkStream);
+                if (protocolPackageResponse.Data == "OK")
+                {
+                    if (SendFile(src))
+                    {
+                        Console.WriteLine("Material agregado exitosamente");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No se pudo enviar el material");
+                    }
+                }
+                else
+                {
                     Console.WriteLine(protocolPackageResponse.Data);
                 }
 

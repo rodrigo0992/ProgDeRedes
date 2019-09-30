@@ -258,7 +258,7 @@ namespace Server
                 file.Name = nameRecived;
                 file.FileSource = fileSourceRecived;
                 studentLogic.AddStudentCourseFile(student, course, file);
-                Message.SendMessage(networkStreamResponse, "RES", 5, "Archivo agregado exitosamente");
+                Message.SendMessage(networkStreamResponse, "RES", 5, "OK");
 
             }
             catch (Exception e)

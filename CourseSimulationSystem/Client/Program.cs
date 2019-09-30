@@ -108,7 +108,7 @@ namespace Client
             }
             else
             {
-                Console.WriteLine("No tienen notificaciones");
+                Console.WriteLine("No tiene notificaciones");
             }
             Console.WriteLine("---------------------------------------------------------------");
             Console.WriteLine("");
