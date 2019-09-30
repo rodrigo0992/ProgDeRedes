@@ -71,20 +71,20 @@ namespace Client
 
         }
 
-        public void getEnrolledCourses()
+        public void GetCoursesWithDetails()
         {
             var data = "";
             Message.SendMessage(networkStream, "REQ", 4, data);
             var protocolPackageResponse = Message.ReceiveMessage(networkStream);
             var courseList = protocolPackageResponse.Data;
             Console.WriteLine("");
-            Console.WriteLine("Se encuentra inscripto a los siguientes cursos:");
+            Console.WriteLine("Lista de cursos disponibles:");
             ShowCourses(courseList);
         }
 
         public void AddFileToCourse()
         {
-            Message.SendMessage(networkStream, "REQ", 4, "");
+            Message.SendMessage(networkStream, "REQ", 11, "");
             var protocolPackageResponse = Message.ReceiveMessage(networkStream);
             var courseList = protocolPackageResponse.Data;
             if (courseList != "")
@@ -116,7 +116,7 @@ namespace Client
 
         public void GetFiles()
         {
-            Message.SendMessage(networkStream, "REQ", 4, "");
+            Message.SendMessage(networkStream, "REQ", 11, "");
             var protocolPackageResponse = Message.ReceiveMessage(networkStream);
             var courseList = protocolPackageResponse.Data;
             Console.WriteLine("");

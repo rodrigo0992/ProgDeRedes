@@ -224,7 +224,19 @@ namespace Server
 
         }
 
-        public void GetEnrolledCourses(Student student,NetworkStream networkStreamResponse)
+        public void GetCoursesWithDetails(Student student,NetworkStream networkStreamResponse)
+        {
+            var listWithDetails = courseLogic.GetCoursesWithDetails(student);
+            string listToResponse = "";
+            foreach (var item in listWithDetails)
+            {
+                listToResponse += item + "-"; 
+            }
+
+            Message.SendMessage(networkStreamResponse, "RES", 4, listToResponse);
+        }
+
+        public void GetEnrolledCourses(Student student, NetworkStream networkStreamResponse)
         {
             var enrolledCourses = this.courseLogic.GetEnrolledCourses(student);
             var courseList = courseLogic.prepareCourseListResponse(enrolledCourses);

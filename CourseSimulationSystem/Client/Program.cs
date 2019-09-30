@@ -116,7 +116,7 @@ namespace Client
 
             Console.WriteLine("Seleccione una opcion:");
             Console.WriteLine("1- Alta de curso");
-            Console.WriteLine("2- Cursos inscripto");
+            Console.WriteLine("2- Cursos disponibles");
             Console.WriteLine("3- Subir material a curso");
             Console.WriteLine("4- Materiales subidos a curso");
             Console.WriteLine("5- Salir");
@@ -128,7 +128,7 @@ namespace Client
                     clientActions.AddStudentToCourse();
                     break;
                 case 2:
-                    clientActions.getEnrolledCourses();
+                    clientActions.GetCoursesWithDetails();
                     break;
                 case 3:
                     clientActions.AddFileToCourse();

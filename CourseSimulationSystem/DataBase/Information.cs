@@ -148,6 +148,11 @@ namespace DataBase
             return StudentCourses.FindAll(x => x.Course.Deleted == false);
         }
 
+        public List<File> GetStudentCourseFiles(StudentCourse studentCourse)
+        {
+            return StudentCourses.Find(x => x == studentCourse && x.Course.Deleted == false).Files;
+        }
+
         public List<Course> GetCourses()
         {
             return Courses.FindAll(x => x.Deleted == false);

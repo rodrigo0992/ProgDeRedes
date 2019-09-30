@@ -75,7 +75,7 @@ namespace Server
                                                 serverActions.AddStudentToCourse(studentConected, protocolPackage.Data, networkStream);
                                                 break;
                                             case 4:
-                                                serverActions.GetEnrolledCourses(studentConected, networkStream);
+                                                serverActions.GetCoursesWithDetails(studentConected, networkStream);
                                                 break;
                                             case 5:
                                                 serverActions.AddFileToStudentCourse(studentConected, protocolPackage.Data, networkStream);
@@ -95,6 +95,9 @@ namespace Server
                                             case 10:
                                                 serverActions.DisconectClient(studentConected, networkStream);
                                                 clientRunning = false;
+                                                break;
+                                            case 11:
+                                                serverActions.GetEnrolledCourses(studentConected, networkStream);
                                                 break;
                                         }
                                     }

@@ -141,6 +141,46 @@ namespace Logic
             }
         }
 
+        public List<String> GetCoursesWithDetails(Student student)
+        {
+            lock (StudentCourseLock)
+            {
+                var listToReturn = new List<String>();
+                var coursesOfStudent = new List<Course>();
+                var studentCourses = Information.GetStudentCourses().Where(x => x.Student == student).ToList();
+                foreach (var item in studentCourses)
+                {
+                    coursesOfStudent.Add(item.Course);
+                    var courseName = item.Course.Name;
+                    var grade = GetGradeOfCourse(item);
+                    var state = "Anotado";
+                    listToReturn.Add("Curso: " + courseName +  " , Estado: " + state + " , Nota: " + grade);
+                }
+
+                var allCourses = GetCourses();
+
+                foreach(var item in allCourses.Except(coursesOfStudent).ToList())
+                {
+                    var courseName = item.Name;
+                    var state = "No anotado";
+                    listToReturn.Add("Curso: " + courseName + " , Estado: " + state);
+                }
+
+                return listToReturn;
+            }
+        }
+
+        public int GetGradeOfCourse(StudentCourse studentCourse)
+        {
+            int totalGrade = 0;
+            var files = Information.GetStudentCourseFiles(studentCourse);
+            foreach(var item in files)
+            {
+                totalGrade += item.Grade;
+            }
+            return totalGrade;
+        }
+
         public string prepareCourseListResponse(List<Course> courses)
         {
             string response = "";
