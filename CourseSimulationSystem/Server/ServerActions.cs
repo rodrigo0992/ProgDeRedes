@@ -44,9 +44,9 @@ namespace Server
                     try
                     {
                         studentToLogin = this.studentLogic.GetStudentByStudentNumOrEmail(student);
-                        studentLogic.AddStudentConection(studentToLogin, tcpClient, tcpClientBackground);
                         if (studentToLogin.Password == password)
                         {
+                            studentLogic.AddStudentConection(studentToLogin, tcpClient, tcpClientBackground);
                             Message.SendMessage(networkStreamResponse, "RES", 1, "Password correcta");
                         }
                         else
@@ -388,6 +388,8 @@ namespace Server
 
                 System.IO.File.WriteAllBytes(path, Convert.FromBase64String(file));
                 Message.SendMessage(networkStreamResponse, "RES", 9, "OK");
+                file = "";
+                nameFile = "";
 
             }
             catch(Exception e)
@@ -406,6 +408,18 @@ namespace Server
             catch (Exception e)
             {
                 Message.SendMessage(networkStreamResponse, "RES", 10, "FAIL");
+            }
+        }
+
+        public void DisconectClient(Student student)
+        {
+            try
+            {
+                studentLogic.DeleteStudentConection(student);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
             }
         }
 

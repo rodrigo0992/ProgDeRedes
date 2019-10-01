@@ -193,7 +193,16 @@ namespace Client
                                 exito = false;
                                 break;
                             }
-
+                        }
+                        if (fileLength == 0)
+                        {
+                            Message.SendMessage(networkStream, "REQ", 9, "");
+                            protocolPackageResponse = Message.ReceiveMessage(networkStream);
+                            if (protocolPackageResponse.Data != "OK")
+                            {
+                                Console.WriteLine("No se pudo enviar el archivo");
+                                exito = false;
+                            }
                         }
                     }
                     Console.WriteLine("Material enviado exitosamente");

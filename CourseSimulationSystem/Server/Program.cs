@@ -21,6 +21,7 @@ namespace Server
         private static bool serverRunning = true;
         private static Thread serverThread;
         private static List<Thread> clientThreads = new List<Thread>();
+        private static StudentLogic studentLogic;
 
         static void Main(string[] args)
         {
@@ -37,7 +38,7 @@ namespace Server
 
             Information information = new Information();
             CourseLogic courseLogic = new CourseLogic(information);
-            StudentLogic studentLogic = new StudentLogic(information);
+            studentLogic = new StudentLogic(information);
             ServerActions serverActions = new ServerActions(courseLogic, studentLogic);
             
             
@@ -104,6 +105,7 @@ namespace Server
                                     catch (Exception e)
                                     {
                                         clientRunning = false;
+                                        serverActions.DisconectClient(studentConected);
                                     }
 
                                 };
@@ -134,7 +136,6 @@ namespace Server
 
         private static void Menu(ServerActions serverActions)
         {
-            StudentLogic studentLogic = new StudentLogic();
 
             Console.WriteLine("Menu:");
             Console.WriteLine("1 - Crear Estudiante");

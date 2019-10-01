@@ -19,6 +19,7 @@ namespace Client
         public static Thread backgroundThread;
         public static TcpClient tcpClient;
         public static TcpClient tcpClientBackground;
+        private static StudentLogic studentLogic;
 
         static void Main(string[] args)
         {
@@ -33,7 +34,7 @@ namespace Client
                 tcpClient = new TcpClient(new IPEndPoint(IPAddress.Parse(ipClient), 0));
                 tcpClient.Connect(IPAddress.Parse(ipServer), port);
                 var networkStream = tcpClient.GetStream();
-                var studentLogic = new StudentLogic();
+                studentLogic = new StudentLogic();
                 var courseLogic = new CourseLogic();
 
                 tcpClientBackground = new TcpClient(new IPEndPoint(IPAddress.Parse(ipClient), 0));
@@ -119,8 +120,9 @@ namespace Client
             Console.WriteLine("2- Cursos disponibles");
             Console.WriteLine("3- Subir material a curso");
             Console.WriteLine("4- Materiales subidos a curso");
-            Console.WriteLine("5- Salir");
-            var opcion = Console.ReadLine();
+            Console.WriteLine("5- Refrescar bandeja notificaciones");
+            Console.WriteLine("6- Salir");
+            var opcion = studentLogic.setNumber("Ingrese una opcion:");
 
             switch (Convert.ToInt32(opcion))
             {
@@ -137,6 +139,8 @@ namespace Client
                     clientActions.GetFiles();
                     break;
                 case 5:
+                    break;
+                case 6:
                     clientRunning = !clientActions.DiscontectFromServer();
                     break;
                 default:
