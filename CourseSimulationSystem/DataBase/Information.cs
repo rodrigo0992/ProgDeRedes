@@ -48,10 +48,12 @@ namespace DataBase
             if (CourseExistsByNumber(courseNum))
                 throw new Exception("El curso con número " + courseNum + " ya existe");
 
+            if (!ValidDeletedCourseNumber(courseNum, courseName))
+                throw new Exception("El número " + courseNum + " no puede ser utilizado");
+
             try
             {
-                Course courseToReinsert = GetDeletedCourseByCourseNumber(courseNum);
-                courseToReinsert = GetDeletedCourseByCourseName(courseName);
+                Course courseToReinsert = GetDeletedCourseByCourseName(courseName);
                 courseToReinsert.Deleted = false;
                 Console.WriteLine("El curso fue reactivado al igual que todas sus dependencias");
             }
@@ -111,10 +113,17 @@ namespace DataBase
             return courseToReturn;
         }
 
-        public Course GetDeletedCourseByCourseNumber(int courseNum)
+        public bool ValidDeletedCourseNumber(int courseNum, string courseName)
         {
-            var courseToReturn = this.Courses.First(x => x.CourseNum == courseNum );
-            return courseToReturn;
+            try
+            {
+                this.Courses.First(x => x.CourseNum == courseNum && x.Name != courseName);
+                return false;
+            }
+            catch (Exception e)
+            {
+                return true;
+            }
         }
         public Course GetDeletedCourseByCourseName(string courseName)
         {

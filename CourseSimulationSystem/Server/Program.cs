@@ -188,6 +188,8 @@ namespace Server
                 serverActions.ClearStudentConections();
 
                 Console.WriteLine("Servidor desconectado");
+                Console.ReadKey();
+                Environment.Exit(1);
             }
             catch (Exception e)
             {

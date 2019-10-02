@@ -103,7 +103,7 @@ namespace Server
                 var studentSurname = studentLogic.setName("Ingrese apellido");
                 Console.WriteLine("Ingrese mail:");
                 var mail= Console.ReadLine();
-                var studentMail = studentLogic.ValidateUserMail(mail);
+                mail = studentLogic.ValidateUserMail(mail);
                 var studentPassword = studentLogic.setName("Ingrese contraseña");
                 Student newStudent = new Student();
                 newStudent.StudentNum = Convert.ToInt32(studentNum);
