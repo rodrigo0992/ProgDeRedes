@@ -21,7 +21,7 @@ namespace Client
         public static TcpClient tcpClientBackground;
         private static StudentLogic studentLogic;
 
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             try
             {
@@ -39,21 +39,8 @@ namespace Client
 
                 tcpClientBackground = new TcpClient(new IPEndPoint(IPAddress.Parse(ipClient), 0));
                 tcpClientBackground.Connect(IPAddress.Parse(ipServer), portBack);
-                var networkStreamBackground = tcpClientBackground.GetStream();
-                backgroundThread = new Thread(() => {
-                    while (clientRunning)
-                    {
-                        try
-                        {
-                            var protocolPackage = Message.ReceiveMessage(networkStreamBackground);
-                            notifications.Add(protocolPackage.Data);
-                        }catch(Exception e)
-                        {
-                            clientRunning = false;
-                        }
-                    }
-                });
-                backgroundThread.Start();
+
+                await Task.Run(() => ListenNotifications().ConfigureAwait(false));
 
                 ClientActions clientActions = new ClientActions(networkStream, courseLogic, studentLogic);
 
@@ -83,7 +70,24 @@ namespace Client
 
         }
 
-        private static void Menu(ClientActions clientActions)
+        private static async Task ListenNotifications()
+        {
+            var networkStreamBackground = tcpClientBackground.GetStream();
+            while (clientRunning)
+            {
+                try
+                {
+                    var protocolPackage = Message.ReceiveMessage(networkStreamBackground);
+                    notifications.Add(protocolPackage.Data);
+                }
+                catch (Exception e)
+                {
+                    clientRunning = false;
+                }
+            }
+        }
+
+            private static void Menu(ClientActions clientActions)
         {
             Console.WriteLine("---------------------------------------------------------------");
             Console.WriteLine("NOTIFICACIONES:");

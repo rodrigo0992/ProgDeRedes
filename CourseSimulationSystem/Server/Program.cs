@@ -19,11 +19,30 @@ namespace Server
     class Program
     {
         private static bool serverRunning = true;
-        private static Thread serverThread;
-        private static List<Thread> clientThreads = new List<Thread>();
+        //private static List<Thread> clientThreads = new List<Thread>();
         private static StudentLogic studentLogic;
+        private static ServerActions serverActions;
 
-        static void Main(string[] args)
+        public static async Task Main(string[] args)
+        {
+
+            Information information = new Information();
+            CourseLogic courseLogic = new CourseLogic(information);
+            studentLogic = new StudentLogic(information);
+            serverActions = new ServerActions(courseLogic, studentLogic);
+
+            await Task.Run(()=>ListenToClients().ConfigureAwait(false)); 
+
+            Console.WriteLine("Bienvenido al admin de Aulas");
+            Menu(serverActions);
+            while (serverRunning)
+            {
+                Menu(serverActions);
+            }
+            CloseServer(serverActions);
+        }
+
+        private static async Task ListenToClients()
         {
             string ip = ConfigurationManager.AppSettings["ip"];
             int port = Convert.ToInt32(ConfigurationManager.AppSettings["port"]);
@@ -35,108 +54,87 @@ namespace Server
             var tcpListenerBackground = new TcpListener(IPAddress.Parse(ip), portBack);
             tcpListenerBackground.Start(100);
 
-
-            Information information = new Information();
-            CourseLogic courseLogic = new CourseLogic(information);
-            studentLogic = new StudentLogic(information);
-            ServerActions serverActions = new ServerActions(courseLogic, studentLogic);
-            
-            
-                serverThread = new Thread(() => 
-                {
-                    while (serverRunning)
-                    {
-                        try
-                        {
-                            var tcpClient = tcpListener.AcceptTcpClient();
-                            var tcpClientBackground = tcpListenerBackground.AcceptTcpClient();
-
-                            var threadClient = new Thread(() => {
-
-                                Student studentConected = new Student();
-                                bool clientRunning = true;
-                                var networkStream = tcpClient.GetStream();
-                                var networkStreamBackground = tcpClientBackground.GetStream();
-
-                                while (clientRunning)
-                                {
-                                    try
-                                    {
-                                        var protocolPackage = Message.ReceiveMessage(networkStream);
-
-                                        switch (protocolPackage.Cmd)
-                                        {
-                                            case 1:
-                                                studentConected = serverActions.Login(protocolPackage.Data, networkStream, tcpClient, tcpClientBackground);
-                                                break;
-                                            case 2:
-                                                serverActions.ListCoursesRequest(studentConected, networkStream);
-                                                break;
-                                            case 3:
-                                                serverActions.AddStudentToCourse(studentConected, protocolPackage.Data, networkStream);
-                                                break;
-                                            case 4:
-                                                serverActions.GetCoursesWithDetails(studentConected, networkStream);
-                                                break;
-                                            case 5:
-                                                serverActions.AddFileToStudentCourse(studentConected, protocolPackage.Data, networkStream);
-                                                break;
-                                            case 6:
-                                                serverActions.GetStudentCourseFiles(studentConected, protocolPackage.Data, networkStream);
-                                                break;
-                                            case 7:
-                                                serverActions.GetFileInitialData(protocolPackage.Data, networkStream);
-                                                break;
-                                            case 8:
-                                                serverActions.GetFilePartData(protocolPackage.Data, networkStream);
-                                                break;
-                                            case 9:
-                                                serverActions.GetFileFinalData(protocolPackage.Data, networkStream);
-                                                break;
-                                            case 10:
-                                                serverActions.DisconectClient(studentConected, networkStream);
-                                                clientRunning = false;
-                                                break;
-                                            case 11:
-                                                serverActions.GetEnrolledCourses(studentConected, networkStream);
-                                                break;
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        clientRunning = false;
-                                        serverActions.DisconectClient(studentConected);
-                                    }
-
-                                };
-
-                            });
-                            clientThreads.Add(threadClient);
-                            threadClient.Start();
-
-                        }
-                        catch(Exception e)
-                        {
-                            Console.WriteLine("El servidor dejó de aceptar nuevos clientes");
-                        }
-
-                    }
-                });
-                serverThread.Start();
-
-
-            Console.WriteLine("Bienvenido al admin de Aulas");
-            Menu(serverActions);
             while (serverRunning)
             {
-                Menu(serverActions);
+                try
+                {
+                    var tcpClient = await tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
+                    var tcpClientBackground = await tcpListenerBackground.AcceptTcpClientAsync().ConfigureAwait(false);
+
+                    await Task.Run(()=>HandleClientAsync(tcpClient,tcpClientBackground).ConfigureAwait(false));
+
+                    //clientThreads.Add(threadClient);
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine("El servidor dejó de aceptar nuevos clientes");
+                }
+
             }
-            CloseServer(serverActions);
+        }
+
+        private static async Task HandleClientAsync(TcpClient tcpClient,TcpClient tcpClientBackground){
+
+            Student studentConected = new Student();
+            bool clientRunning = true;
+            var networkStream = tcpClient.GetStream();
+            var networkStreamBackground = tcpClientBackground.GetStream();
+
+            while (clientRunning)
+            {
+                try
+                {
+                    var protocolPackage = Message.ReceiveMessage(networkStream);
+
+                    switch (protocolPackage.Cmd)
+                    {
+                        case 1:
+                            studentConected = serverActions.Login(protocolPackage.Data, networkStream, tcpClient, tcpClientBackground);
+                            break;
+                        case 2:
+                            serverActions.ListCoursesRequest(studentConected, networkStream);
+                            break;
+                        case 3:
+                            serverActions.AddStudentToCourse(studentConected, protocolPackage.Data, networkStream);
+                            break;
+                        case 4:
+                            serverActions.GetCoursesWithDetails(studentConected, networkStream);
+                            break;
+                        case 5:
+                            serverActions.AddFileToStudentCourse(studentConected, protocolPackage.Data, networkStream);
+                            break;
+                        case 6:
+                            serverActions.GetStudentCourseFiles(studentConected, protocolPackage.Data, networkStream);
+                            break;
+                        case 7:
+                            serverActions.GetFileInitialData(protocolPackage.Data, networkStream);
+                            break;
+                        case 8:
+                            serverActions.GetFilePartData(protocolPackage.Data, networkStream);
+                            break;
+                        case 9:
+                            serverActions.GetFileFinalData(protocolPackage.Data, networkStream);
+                            break;
+                        case 10:
+                            serverActions.DisconectClient(studentConected, networkStream);
+                            clientRunning = false;
+                            break;
+                        case 11:
+                            serverActions.GetEnrolledCourses(studentConected, networkStream);
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    clientRunning = false;
+                    serverActions.DisconectClient(studentConected);
+                }
+
+            };
         }
 
         private static void Menu(ServerActions serverActions)
         {
-
             Console.WriteLine("Menu:");
             Console.WriteLine("1 - Crear Estudiante");
             Console.WriteLine("2 - Listar Estudiantes");
@@ -184,7 +182,6 @@ namespace Server
         {
             try
             {
-
                 serverActions.ClearStudentConections();
 
                 Console.WriteLine("Servidor desconectado");
