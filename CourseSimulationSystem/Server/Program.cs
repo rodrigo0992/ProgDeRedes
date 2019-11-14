@@ -13,6 +13,11 @@ using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using Entities;
 using System.Configuration;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels;
+using System.Runtime.Remoting.Channels.Tcp;
+using RemoteServiceInterfaces;
+using RemoteService;
 
 namespace Server
 {
@@ -22,6 +27,7 @@ namespace Server
         //private static List<Thread> clientThreads = new List<Thread>();
         private static StudentLogic studentLogic;
         private static ServerActions serverActions;
+        private static TcpChannel remotingTcpChannel;
 
         public static async Task Main(string[] args)
         {
@@ -29,7 +35,10 @@ namespace Server
             Information information = new Information();
             CourseLogic courseLogic = new CourseLogic(information);
             studentLogic = new StudentLogic(information);
+            TeacherLogic teacherLogic = new TeacherLogic(information);
             serverActions = new ServerActions(courseLogic, studentLogic);
+
+            IRemote remote = RemotingHost(teacherLogic);
 
             await Task.Run(()=>ListenToClients().ConfigureAwait(false)); 
 
@@ -178,11 +187,32 @@ namespace Server
             Console.WriteLine("");
         }
 
+        private static IRemote RemotingHost(TeacherLogic teacherLogic)
+        {
+            remotingTcpChannel = new TcpChannel(7000);
+            ChannelServices.RegisterChannel(
+                remotingTcpChannel,
+                false);
+            RemotingConfiguration.RegisterWellKnownServiceType(
+                typeof(Remote),
+                "Remote",
+                WellKnownObjectMode.Singleton);
+
+            var remote = (IRemote)Activator.GetObject(
+                typeof(IRemote),
+                "tcp://127.0.0.1:7000/Remote");
+
+            remote.SetTeacherLogic(teacherLogic);
+
+            return remote;
+        }
+
         private static void CloseServer(ServerActions serverActions)
         {
             try
             {
                 serverActions.ClearStudentConections();
+                ChannelServices.UnregisterChannel(remotingTcpChannel);
 
                 Console.WriteLine("Servidor desconectado");
                 Console.ReadKey();

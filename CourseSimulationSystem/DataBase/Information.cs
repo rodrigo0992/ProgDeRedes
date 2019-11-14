@@ -14,7 +14,7 @@ namespace DataBase
         public List<Course> Courses { get; set; }
         public List<StudentCourse> StudentCourses { get; set; }
         public List<StudentSocket> StudentConections { get; set; }
-
+        public List<Teacher> Teachers { get; set; }
         public Information()
         {
             Students = new List<Student>();
@@ -62,6 +62,11 @@ namespace DataBase
                 this.Courses.Add(course);
             }
 
+        }
+
+        public void AddTeacher(Teacher teacher)
+        {
+            this.Teachers.Add(teacher);
         }
         public void AddStudentCourse(StudentCourse studentCourse)
         {
@@ -224,6 +229,27 @@ namespace DataBase
                 item.tcpClient.Dispose();
             }
             StudentConections.Clear();
+        }
+
+        public Teacher GetTeacherByNameOrEmail(string teacher)
+        {
+
+            try
+            {
+                var teacherToReturn = this.Teachers.First(x => x.Name == teacher);
+                return teacherToReturn;
+            }
+            catch (Exception e)
+            {
+                var teacherToReturn = this.Teachers.First(x => x.Mail == teacher);
+                return teacherToReturn;
+            }
+
+        }
+
+        public List<Teacher> GetTeachers()
+        {
+            return Teachers;
         }
     }
 }

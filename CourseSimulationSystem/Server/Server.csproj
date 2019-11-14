@@ -42,6 +42,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -74,6 +75,14 @@
     <ProjectReference Include="..\Protocol\Protocol.csproj">
       <Project>{032fdbb8-754d-49e1-ab0d-81ba7cd5c411}</Project>
       <Name>Protocol</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RemoteServiceInterfaces\RemoteServiceInterfaces.csproj">
+      <Project>{F4DA05AF-B10B-4E40-A084-AC3234CBACD3}</Project>
+      <Name>RemoteServiceInterfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RemoteService\RemoteService.csproj">
+      <Project>{04BDD00A-43EE-4879-8ED0-889EC06BD37C}</Project>
+      <Name>RemoteService</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
