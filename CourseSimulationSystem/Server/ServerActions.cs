@@ -339,7 +339,7 @@ namespace Server
 
                     try
                     {
-                        var networStream = StudentsSocketsList.Find(x=>x.student == student).tcpClientBackground.GetStream();
+                        var networStream = StudentsSocketsList.Find(x=>x.student.StudentNum == student.StudentNum).tcpClientBackground.GetStream();
                         var notification = course.Name + ";" + fileName + ";" + grade;
                         Message.SendMessage(networStream, "REQ", 0, notification);
 

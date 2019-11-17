@@ -17,6 +17,7 @@ namespace RemoteService
         public List<StudentCourse> StudentCourses { get; set; }
         public List<StudentSocket> StudentConections { get; set; }
         public List<Teacher> Teachers { get; set; }
+        public Boolean LoggedTeacher { get; set; }
 
         public Remote()
         {
@@ -25,6 +26,7 @@ namespace RemoteService
             StudentCourses = new List<StudentCourse>();
             StudentConections = new List<StudentSocket>();
             Teachers = new List<Teacher>();
+            LoggedTeacher = false;
         }
 
         public void AddStudent(Student student)
@@ -289,8 +291,10 @@ namespace RemoteService
             {
                 var teacherToLogin = Teachers.Find(x => x.TeacherNum == teacher.TeacherNum);
                 if (teacherToLogin.Password == teacher.Password)
+                {
                     correctLogin = true;
-
+                    LoggedTeacher = true;
+                }
             }
             catch (Exception e)
             {
@@ -300,53 +304,84 @@ namespace RemoteService
             return correctLogin;
         }
 
-        public List<String> GetStudentCourseFilesWithoutGrade()
+        public ICollection<String> GetStudentCourseFilesWithoutGrade()
         {
-            try
+            if (LoggedTeacher)
             {
-                List<String> listToReturn = new List<String>();
-                foreach (var sc in StudentCourses)
+                try
                 {
-                    foreach(var f in sc.Files)
+                    ICollection<String> listToReturn = new List<String>();
+                    foreach (var sc in StudentCourses)
                     {
-                        var line = "Estudiante: " + sc.Student.Name + " " + sc.Student.SurName + " " + sc.Student.StudentNum
-                                   + " - Curso: " + sc.Course.Name + " " + sc.Course.CourseNum
-                                   + " - Material: " + f.Name;
-                        listToReturn.Add(line);
+                        foreach(var f in sc.Files)
+                        {
+                            if (f.Grade == 0)
+                            {
+                                var line = "Estudiante: " + sc.Student.Name + " " + sc.Student.SurName + " " + sc.Student.StudentNum
+                                           + " - Curso: " + sc.Course.Name + " " + sc.Course.CourseNum
+                                           + " - Material: " + f.Name;
+
+                                listToReturn.Add(line);
+                            }
+
+                        }
                     }
+                    return listToReturn;
                 }
-                return listToReturn;
-            }
-            catch (Exception e)
+                catch (Exception e)
+                {
+                    throw new Exception("No hay materiales para corregir");
+                }
+            }else
             {
-                throw new Exception("No hay materiales para corregir");
+                throw new Exception("Docente debe iniciar sesión");
             }
         }
 
         public void AssignGradeByNums(int studentNum, int courseNum, string fileName, int Grade)
         {
+            if (LoggedTeacher)
+            {
+                try
+                {
+                    Student studentToEvaluate = new Student
+                    {
+                        StudentNum = studentNum,
+                        Name = "",
+                        Password = "",
+                        SurName = "",
+                        Mail = "",
+                    };
+
+                    Course courseToEvaluate = new Course
+                    {
+                        CourseNum = courseNum,
+                    };
+
+                    var file = GetFileByName(studentToEvaluate, courseToEvaluate, fileName);
+                    file.Grade = Grade;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception(e.Message);
+                }
+            }
+            else
+            {
+                throw new Exception("Docente debe iniciar sesión");
+            }
+        }
+
+        public void AddStudentCourseFile(Student student, Course course, File file)
+        {
             try
             {
-                Student studentToEvaluate = new Student
-                {
-                    StudentNum = studentNum,
-                    Name = "",
-                    Password = "",
-                    SurName = "",
-                    Mail = "",
-                };
-
-                Course courseToEvaluate = new Course
-                {
-                    CourseNum = courseNum,
-                };
-
-                var file = GetFileByName(studentToEvaluate, courseToEvaluate, fileName);
-                file.Grade = Grade;
+                var studentCourse = StudentCourses.Find(x => (x.Student.StudentNum == student.StudentNum && x.Course.CourseNum == course.CourseNum));
+                studentCourse.Files.Add(file);
             }
             catch (Exception e)
             {
-                throw new Exception(e.Message);
+                throw new Exception("No se pudo agregar el archivo");
             }
         }
 

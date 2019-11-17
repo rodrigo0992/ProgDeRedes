@@ -65,13 +65,11 @@ namespace Logic
         {
             try
             {
-                var studentCourse = Remote.GetStudentCourses().Find(x => (x.Student.StudentNum == student.StudentNum && x.Course.CourseNum == course.CourseNum));
-                studentCourse.Files.Add(file);
-                
+                Remote.AddStudentCourseFile(student,course,file);
             }
             catch(Exception e)
             {
-                throw new Exception("No se pudo agregar el archivo");
+                throw new Exception(e.Message);
             }
         }
 
@@ -92,8 +90,6 @@ namespace Logic
         {
             try
             {
-                Console.WriteLine("Student Num: " + student.StudentNum);
-                Console.WriteLine("Course Num: " + course.CourseNum);
                 var studentCourse = Remote.GetStudentCourses().Find(x => x.Student.StudentNum == student.StudentNum && x.Course.CourseNum == course.CourseNum);
                 return studentCourse.Files.Where(x => x.Grade == 0).ToList();
             }

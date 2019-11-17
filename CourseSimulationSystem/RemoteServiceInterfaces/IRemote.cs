@@ -37,7 +37,8 @@ namespace RemoteServiceInterfaces
         List<Teacher> GetTeachers();
         Boolean LoginTeacher(Teacher teacher);
         void AssignGrade(Student student, Course course, string fileName, int Grade);
-        List<String> GetStudentCourseFilesWithoutGrade();
+        ICollection<String> GetStudentCourseFilesWithoutGrade();
         void AssignGradeByNums(int studentNum, int courseNum, string fileName, int Grade);
+        void AddStudentCourseFile(Student student, Course course, File file);
     }
 }

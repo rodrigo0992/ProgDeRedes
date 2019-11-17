@@ -22,6 +22,7 @@ namespace CourseAPI.Controllers
         }
 
         // GET api/teachers
+        [HttpGet]
         public IHttpActionResult GetTeachers()
         {
 
@@ -42,6 +43,7 @@ namespace CourseAPI.Controllers
         }
 
         // POST api/teachers
+        [HttpPost]
         public IHttpActionResult AddTeacher([FromBody]TeacherModel teacherModel)
         {
 
@@ -50,7 +52,9 @@ namespace CourseAPI.Controllers
             return Ok(teacherInserted);
         }
 
-        // POST api/teachers
+        // POST api/teachers/login
+        [HttpPost]
+        [Route("api/Teachers/login")]
         public IHttpActionResult Login([FromBody]TeacherModel teacherModel)
         {
             try
@@ -65,8 +69,9 @@ namespace CourseAPI.Controllers
             }
         }
 
-        // GET api/files
-        [Route("files")]
+        // GET api/teachers/files
+        [HttpGet]
+        [Route("api/Teachers/files")]
         public IHttpActionResult GetFilesToEvaluate()
         {
             try
@@ -82,9 +87,10 @@ namespace CourseAPI.Controllers
             }
         }
 
-        // PUT
-        [Route("files")]
-        public IHttpActionResult EvaluateFile(int id, [FromBody]FileToEvaluate fileToEvaluate)
+        // PUT api/teachers/files
+        [HttpPut]
+        [Route("api/Teachers/files")]
+        public IHttpActionResult EvaluateFile([FromBody]FileToEvaluate fileToEvaluate)
         {
             try
             {
