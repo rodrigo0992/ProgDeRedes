@@ -12,15 +12,19 @@ namespace Logic
     public class TeacherLogic
     {
         private IRemote Remote { get; set; }
+        private QueueLogic QueueLogic { get; set; }
 
-        public TeacherLogic(IRemote remote)
+        public TeacherLogic(IRemote remote, QueueLogic QueueLogic)
         {
             this.Remote = remote;
+            this.QueueLogic = QueueLogic;
         }
 
         public void Add(Teacher teacher)
         {
             this.Remote.AddTeacher(teacher);
+            QueueLogic.AddToQueue("2", "Se agregó el docente " + teacher.Name + " "
+                      + teacher.SurName + " " + teacher.TeacherNum);
         }
 
         public List<Teacher> GetTeachers()

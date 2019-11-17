@@ -16,13 +16,16 @@ namespace Logic
         private readonly object StudentCourseLock = new object();
         private readonly object CourseLock = new object();
 
+        private QueueLogic QueueLogic { get; set; }
+
         public CourseLogic()
         {
 
         }
-        public CourseLogic(IRemote remote)
+        public CourseLogic(IRemote remote, QueueLogic queueLogic)
         {
             this.Remote = remote;
+            this.QueueLogic = queueLogic;
         }
 
         public void AddCourse(Course course)
@@ -31,6 +34,8 @@ namespace Logic
                 try
                 {
                     this.Remote.AddCourse(course);
+                    QueueLogic.AddToQueue("3", "Se agregó el curso " + course.Name + " "
+                                            + course.CourseNum);
                 }
                 catch (Exception e)
                 {
@@ -91,6 +96,7 @@ namespace Logic
                 try
                 {
                     this.Remote.DeleteCourse(courseIndex);
+                    QueueLogic.AddToQueue("4", "Se borró el curso " + courseIndex);
                 }
                 catch (Exception e)
                 {
@@ -107,6 +113,9 @@ namespace Logic
             lock (StudentCourseLock)
             {
                 this.Remote.AddStudentCourse(studentCourse);
+                QueueLogic.AddToQueue("5", "Se agregó el estudiante " + studentCourse.Student.Name + " "
+                      + studentCourse.Student.SurName + " " + studentCourse.Student.StudentNum + " al curso "
+                      + studentCourse.Course.Name + " " + studentCourse.Course.CourseNum);
             }
         }
 

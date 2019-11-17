@@ -18,6 +18,7 @@ namespace RemoteService
         public List<StudentSocket> StudentConections { get; set; }
         public List<Teacher> Teachers { get; set; }
         public Boolean LoggedTeacher { get; set; }
+        public QueueLogic queueLogic { get; set; }
 
         public Remote()
         {
@@ -27,6 +28,8 @@ namespace RemoteService
             StudentConections = new List<StudentSocket>();
             Teachers = new List<Teacher>();
             LoggedTeacher = false;
+            var queuePath = @"FormatName:Direct=TCP:192.168.1.152\Private$\logqueue";
+            queueLogic = new QueueLogic(queuePath);
         }
 
         public void AddStudent(Student student)
@@ -360,6 +363,8 @@ namespace RemoteService
 
                     var file = GetFileByName(studentToEvaluate, courseToEvaluate, fileName);
                     file.Grade = Grade;
+                    queueLogic.AddToQueue("6", "Se corrigió el material " + fileName + " del estudiante "
+                                        + studentNum + " en el curso " + courseNum);
                 }
                 catch (Exception e)
                 {

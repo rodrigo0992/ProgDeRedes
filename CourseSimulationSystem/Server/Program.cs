@@ -18,6 +18,7 @@ using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using RemoteServiceInterfaces;
 using RemoteService;
+using System.Messaging;
 
 namespace Server
 {
@@ -33,9 +34,12 @@ namespace Server
         {
 
             IRemote remote = RemotingHost();
-            CourseLogic courseLogic = new CourseLogic(remote);
-            studentLogic = new StudentLogic(remote);
-            TeacherLogic teacherLogic = new TeacherLogic(remote);
+
+            QueueLogic queueLogic = CreateMessageQueue();   
+
+            CourseLogic courseLogic = new CourseLogic(remote, queueLogic);
+            studentLogic = new StudentLogic(remote, queueLogic);
+            TeacherLogic teacherLogic = new TeacherLogic(remote, queueLogic);
             serverActions = new ServerActions(courseLogic, studentLogic);
 
             new Thread(() => ListenToClients()).Start();
@@ -91,7 +95,7 @@ namespace Server
             {
                 try
                 {
-                    var protocolPackage = Message.ReceiveMessage(networkStream);
+                    var protocolPackage = Protocol.Message.ReceiveMessage(networkStream);
 
                     switch (protocolPackage.Cmd)
                     {
@@ -201,6 +205,21 @@ namespace Server
                 "tcp://127.0.0.1:7000/Remote");
 
             return remote;
+        }
+
+        private static QueueLogic CreateMessageQueue()
+        {
+            var queuePath = @".\private$\logQueue";
+            //@"FormatName:Direct=TCP:192.168.1.152\Private$\logqueue"
+
+            QueueLogic ql = new QueueLogic(queuePath);
+
+            List<Log> historyLog = new List<Log>();
+            if (!MessageQueue.Exists(queuePath))
+            {
+                MessageQueue.Create(queuePath);
+            }
+            return ql;
         }
 
         private static void CloseServer(ServerActions serverActions)

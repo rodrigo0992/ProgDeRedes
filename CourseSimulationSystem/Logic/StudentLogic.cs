@@ -18,13 +18,16 @@ namespace Logic
 
         private readonly object StudentConectionLock = new object();
 
+        private QueueLogic QueueLogic { get; set; }
+
         public StudentLogic()
         {
 
         }
-        public StudentLogic(IRemote remote)
+        public StudentLogic(IRemote remote, QueueLogic queueLogic)
         {
             this.Remote = remote;
+            this.QueueLogic = queueLogic;
         }
 
 
@@ -33,6 +36,9 @@ namespace Logic
             try
             {
                 this.Remote.AddStudent(student);
+
+                QueueLogic.AddToQueue("1", "Se agregó el estudiante " + student.Name + " "
+                                      + student.SurName + " " + student.StudentNum );
             }
             catch (Exception e)
             {
@@ -103,6 +109,9 @@ namespace Logic
         {
             try{
                 Remote.AssignGrade(student, course, fileName, Grade);
+                QueueLogic.AddToQueue("6", "Se corrigió el material " + fileName + " del estudiante " 
+                  + student.Name + " " + student.SurName + " " + student.StudentNum + " en el curso "
+                  + course.Name + " " + course.CourseNum);
             }
             catch (Exception e)
             {
