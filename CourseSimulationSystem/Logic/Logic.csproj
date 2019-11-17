@@ -62,6 +62,10 @@
       <Project>{265ce03c-6fbe-4000-8da4-d9a601094264}</Project>
       <Name>Entities</Name>
     </ProjectReference>
+    <ProjectReference Include="..\RemoteServiceInterfaces\RemoteServiceInterfaces.csproj">
+      <Project>{f4da05af-b10b-4e40-a084-ac3234cbacd3}</Project>
+      <Name>RemoteServiceInterfaces</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

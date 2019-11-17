@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Newtonsoft.Json.Linq;
+//using Newtonsoft.Json.Linq;
 using Entities;
 using System.Configuration;
 using System.Runtime.Remoting;
@@ -29,18 +29,16 @@ namespace Server
         private static ServerActions serverActions;
         private static TcpChannel remotingTcpChannel;
 
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
 
-            Information information = new Information();
-            CourseLogic courseLogic = new CourseLogic(information);
-            studentLogic = new StudentLogic(information);
-            TeacherLogic teacherLogic = new TeacherLogic(information);
+            IRemote remote = RemotingHost();
+            CourseLogic courseLogic = new CourseLogic(remote);
+            studentLogic = new StudentLogic(remote);
+            TeacherLogic teacherLogic = new TeacherLogic(remote);
             serverActions = new ServerActions(courseLogic, studentLogic);
 
-            IRemote remote = RemotingHost(teacherLogic);
-
-            await Task.Run(()=>ListenToClients().ConfigureAwait(false)); 
+            new Thread(() => ListenToClients()).Start();
 
             Console.WriteLine("Bienvenido al admin de Aulas");
             Menu(serverActions);
@@ -51,7 +49,7 @@ namespace Server
             CloseServer(serverActions);
         }
 
-        private static async Task ListenToClients()
+        private static void ListenToClients()
         {
             string ip = ConfigurationManager.AppSettings["ip"];
             int port = Convert.ToInt32(ConfigurationManager.AppSettings["port"]);
@@ -67,10 +65,10 @@ namespace Server
             {
                 try
                 {
-                    var tcpClient = await tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
-                    var tcpClientBackground = await tcpListenerBackground.AcceptTcpClientAsync().ConfigureAwait(false);
+                    var tcpClient =  tcpListener.AcceptTcpClient();
+                    var tcpClientBackground = tcpListenerBackground.AcceptTcpClient();
 
-                    await Task.Run(()=>HandleClientAsync(tcpClient,tcpClientBackground).ConfigureAwait(false));
+                    new Thread(() => HandleClientAsync(tcpClient, tcpClientBackground)).Start();
 
                     //clientThreads.Add(threadClient);
                 }
@@ -82,7 +80,7 @@ namespace Server
             }
         }
 
-        private static async Task HandleClientAsync(TcpClient tcpClient,TcpClient tcpClientBackground){
+        private static void HandleClientAsync(TcpClient tcpClient,TcpClient tcpClientBackground){
 
             Student studentConected = new Student();
             bool clientRunning = true;
@@ -187,7 +185,7 @@ namespace Server
             Console.WriteLine("");
         }
 
-        private static IRemote RemotingHost(TeacherLogic teacherLogic)
+        private static IRemote RemotingHost()
         {
             remotingTcpChannel = new TcpChannel(7000);
             ChannelServices.RegisterChannel(
@@ -201,8 +199,6 @@ namespace Server
             var remote = (IRemote)Activator.GetObject(
                 typeof(IRemote),
                 "tcp://127.0.0.1:7000/Remote");
-
-            remote.SetTeacherLogic(teacherLogic);
 
             return remote;
         }

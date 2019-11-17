@@ -10,7 +10,7 @@ namespace DataBase
 {
     public class Information
     {
-        public List<Student>  Students { get; set; }
+        /*public List<Student>  Students { get; set; }
         public List<Course> Courses { get; set; }
         public List<StudentCourse> StudentCourses { get; set; }
         public List<StudentSocket> StudentConections { get; set; }
@@ -251,5 +251,6 @@ namespace DataBase
         {
             return Teachers;
         }
+        */
     }
 }

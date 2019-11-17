@@ -49,10 +49,6 @@
       <Project>{265CE03C-6FBE-4000-8DA4-D9A601094264}</Project>
       <Name>Entities</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Logic\Logic.csproj">
-      <Project>{A23B69A8-8A44-48BE-8C6E-6337DCAB49B4}</Project>
-      <Name>Logic</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

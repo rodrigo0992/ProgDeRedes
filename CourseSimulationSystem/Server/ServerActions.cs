@@ -18,11 +18,13 @@ namespace Server
         private string file;
         private int fileLenght;
         private string nameFile;
+        private List<StudentSocket> StudentsSocketsList { get; set; }
 
         public ServerActions(CourseLogic courseLogic, StudentLogic studentLogic)
         {
             this.courseLogic = courseLogic;
             this.studentLogic = studentLogic;
+            this.StudentsSocketsList = new List<StudentSocket>();
         }
 
         // Start response server methods
@@ -46,7 +48,16 @@ namespace Server
                         studentToLogin = this.studentLogic.GetStudentByStudentNumOrEmail(student);
                         if (studentToLogin.Password == password)
                         {
-                            studentLogic.AddStudentConection(studentToLogin, tcpClient, tcpClientBackground);
+                           
+                            studentLogic.AddStudentConection(studentToLogin);
+                            var studentSocket = new StudentSocket
+                            {
+                                student = studentToLogin,
+                                tcpClient = tcpClient,
+                                tcpClientBackground = tcpClientBackground,
+                            };
+                            this.StudentsSocketsList.Add(studentSocket);
+
                             Message.SendMessage(networkStreamResponse, "RES", 1, "Password correcta");
                         }
                         else
@@ -328,8 +339,7 @@ namespace Server
 
                     try
                     {
-                        var studentSocket = studentLogic.GetStudentSocket(student);
-                        var networStream = studentSocket.tcpClientBackground.GetStream();
+                        var networStream = StudentsSocketsList.Find(x=>x.student == student).tcpClientBackground.GetStream();
                         var notification = course.Name + ";" + fileName + ";" + grade;
                         Message.SendMessage(networStream, "REQ", 0, notification);
 
@@ -339,8 +349,6 @@ namespace Server
                     {
                         Console.WriteLine("No se notificó al alumno");
                     }
-                        
-   
 
                 }
                 catch (Exception e)
@@ -428,6 +436,11 @@ namespace Server
             try
             {
                 studentLogic.ClearStudentConections();
+                foreach (var item in StudentsSocketsList)
+                {
+                    item.tcpClient.Dispose();
+                    item.tcpClientBackground.Dispose();
+                }
             }
             catch (Exception e)
             {

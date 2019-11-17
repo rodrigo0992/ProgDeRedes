@@ -1,9 +1,11 @@
 ﻿using DataBase;
 using Entities;
+using RemoteServiceInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -12,7 +14,7 @@ namespace Logic
 {
     public class StudentLogic
     {
-        private Information Information { get; set; }
+        private IRemote Remote { get; set; }
 
         private readonly object StudentConectionLock = new object();
 
@@ -20,9 +22,9 @@ namespace Logic
         {
 
         }
-        public StudentLogic(Information information)
+        public StudentLogic(IRemote remote)
         {
-            this.Information = information;
+            this.Remote = remote;
         }
 
 
@@ -30,7 +32,7 @@ namespace Logic
         {
             try
             {
-                this.Information.AddStudent(student);
+                this.Remote.AddStudent(student);
             }
             catch (Exception e)
             {
@@ -40,18 +42,18 @@ namespace Logic
         
         public List<Student> GetStudents()
         {
-            return this.Information.GetStudents();
+            return this.Remote.GetStudents();
         }
 
         public bool StudentExists(string number)
         {
-            return this.Information.StudentExists(number);
+            return this.Remote.StudentExists(number);
         }
         public Student GetStudentByStudentNumOrEmail(string number)
         {
             try
             {
-                return this.Information.GetStudentByStudentNumOrEmail(number);
+                return this.Remote.GetStudentByStudentNumOrEmail(number);
             }
             catch (Exception e)
             {
@@ -63,7 +65,7 @@ namespace Logic
         {
             try
             {
-                var studentCourse = Information.GetStudentCourses().Find(x => (x.Student == student && x.Course == course));
+                var studentCourse = Remote.GetStudentCourses().Find(x => (x.Student.StudentNum == student.StudentNum && x.Course.CourseNum == course.CourseNum));
                 studentCourse.Files.Add(file);
                 
             }
@@ -77,7 +79,7 @@ namespace Logic
         {
             try
             {
-                var studentCourse = Information.GetStudentCourses().Find(x => x.Student == student && x.Course == course);
+                var studentCourse = Remote.GetStudentCourses().Find(x => x.Student.StudentNum == student.StudentNum && x.Course.CourseNum == course.CourseNum);
                 return studentCourse.Files;
             }
             catch(Exception e)
@@ -90,7 +92,9 @@ namespace Logic
         {
             try
             {
-                var studentCourse = Information.GetStudentCourses().Find(x => x.Student == student && x.Course == course);
+                Console.WriteLine("Student Num: " + student.StudentNum);
+                Console.WriteLine("Course Num: " + course.CourseNum);
+                var studentCourse = Remote.GetStudentCourses().Find(x => x.Student.StudentNum == student.StudentNum && x.Course.CourseNum == course.CourseNum);
                 return studentCourse.Files.Where(x => x.Grade == 0).ToList();
             }
             catch (Exception e)
@@ -99,31 +103,16 @@ namespace Logic
             }
         }
 
-        public File GetFileByName(Student student, Course course, string fileName)
-        {
-            try
-            {
-                var studentCourse = Information.GetStudentCourses().Find(x => x.Student == student && x.Course == course);
-                return studentCourse.Files.First(x => x.Name == fileName);
-            }
-            catch (Exception e)
-            {
-                throw new Exception("No se encuentra el material");
-            }
-        }
-
         public void AssignGrade(Student student, Course course, string fileName, int Grade)
         {
             try{
-                var file = GetFileByName( student,  course,  fileName);
-                file.Grade = Grade;
+                Remote.AssignGrade(student, course, fileName, Grade);
             }
             catch (Exception e)
             {
                 throw new Exception(e.Message);
             }
         }
-
 
         public string FileListToResponse(List<File> files)
         {
@@ -135,13 +124,13 @@ namespace Logic
             return response;
         }
 
-        public void AddStudentConection(Student student, TcpClient tcpClient, TcpClient tcpClientBackground)
+        public void AddStudentConection(Student student)
         {
             lock (StudentConectionLock)
             {
                 try
                 {
-                    Information.AddStudentConection(student, tcpClient, tcpClientBackground);
+                    Remote.AddStudentConection(student);
                 }
                 catch (Exception e)
                 {
@@ -157,7 +146,7 @@ namespace Logic
             {
                 try
                 {
-                    Information.DeleteStudentConection(student);
+                    Remote.DeleteStudentConection(student);
                 }
                 catch (Exception e)
                 {
@@ -173,7 +162,7 @@ namespace Logic
             {
                 try
                 {
-                    Information.ClearStudentSockets();
+                    Remote.ClearStudentSockets();
                 }
                 catch (Exception e)
                 {
@@ -188,7 +177,7 @@ namespace Logic
             {
                 try
                 {
-                    return Information.GetStudentSocket(student);
+                    return Remote.GetStudentSocket(student);
                 }
                 catch (Exception e)
                 {
@@ -263,9 +252,6 @@ namespace Logic
             return studentString;
         }
 
-        public TcpClient getUserTcpClient(Student student)
-        {
-            return Information.StudentConections.Find(x => x.student == student).tcpClientBackground;
-        }
+
     }
 }

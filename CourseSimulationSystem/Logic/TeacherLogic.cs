@@ -1,5 +1,6 @@
 ﻿using DataBase;
 using Entities;
+using RemoteServiceInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,26 +11,26 @@ namespace Logic
 {
     public class TeacherLogic
     {
-        private Information Information { get; set; }
+        private IRemote Remote { get; set; }
 
-        public TeacherLogic(Information information)
+        public TeacherLogic(IRemote remote)
         {
-            this.Information = information;
+            this.Remote = remote;
         }
 
         public void Add(Teacher teacher)
         {
-            this.Information.AddTeacher(teacher);
+            this.Remote.AddTeacher(teacher);
         }
 
         public List<Teacher> GetTeachers()
         {
-            return this.Information.GetTeachers();
+            return this.Remote.GetTeachers();
         }
 
         public Teacher GetTeacherByNameOrEmail(String teacher)
         {
-            return this.Information.GetTeacherByNameOrEmail(teacher);
+            return this.Remote.GetTeacherByNameOrEmail(teacher);
         }
 
     }

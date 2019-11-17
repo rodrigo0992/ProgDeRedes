@@ -21,7 +21,7 @@ namespace Client
         public static TcpClient tcpClientBackground;
         private static StudentLogic studentLogic;
 
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             try
             {
@@ -40,7 +40,7 @@ namespace Client
                 tcpClientBackground = new TcpClient(new IPEndPoint(IPAddress.Parse(ipClient), 0));
                 tcpClientBackground.Connect(IPAddress.Parse(ipServer), portBack);
 
-                await Task.Run(() => ListenNotifications().ConfigureAwait(false));
+                new Thread(() => ListenNotifications()).Start();
 
                 ClientActions clientActions = new ClientActions(networkStream, courseLogic, studentLogic);
 
@@ -70,7 +70,7 @@ namespace Client
 
         }
 
-        private static async Task ListenNotifications()
+        private static void ListenNotifications()
         {
             var networkStreamBackground = tcpClientBackground.GetStream();
             while (clientRunning)
@@ -87,7 +87,7 @@ namespace Client
             }
         }
 
-            private static void Menu(ClientActions clientActions)
+        private static void Menu(ClientActions clientActions)
         {
             Console.WriteLine("---------------------------------------------------------------");
             Console.WriteLine("NOTIFICACIONES:");

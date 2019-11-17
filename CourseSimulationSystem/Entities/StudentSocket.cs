@@ -7,11 +7,19 @@ using System.Threading.Tasks;
 
 namespace Entities
 {
+    [Serializable]
     public struct StudentSocket
     {
         public Student student;
         public TcpClient tcpClient;
         public TcpClient tcpClientBackground;
+
+        public StudentSocket(Student student)
+        {
+            this.student = student;
+            this.tcpClient = null;
+            this.tcpClientBackground = null;
+        }
 
         public StudentSocket(Student student, TcpClient tcpClient, TcpClient tcpClientBackground)
         {

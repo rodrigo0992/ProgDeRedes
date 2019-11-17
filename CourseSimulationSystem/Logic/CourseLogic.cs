@@ -1,5 +1,6 @@
 ﻿using DataBase;
 using Entities;
+using RemoteServiceInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace Logic
 {
     public class CourseLogic
     {
-        private Information Information { get; set; }
+        private IRemote Remote { get; set; }
 
         private readonly object StudentCourseLock = new object();
         private readonly object CourseLock = new object();
@@ -19,9 +20,9 @@ namespace Logic
         {
 
         }
-        public CourseLogic(Information information)
+        public CourseLogic(IRemote remote)
         {
-            this.Information = information;
+            this.Remote = remote;
         }
 
         public void AddCourse(Course course)
@@ -29,7 +30,7 @@ namespace Logic
             lock (CourseLock){
                 try
                 {
-                    this.Information.AddCourse(course);
+                    this.Remote.AddCourse(course);
                 }
                 catch (Exception e)
                 {
@@ -42,7 +43,7 @@ namespace Logic
         {
             lock (CourseLock)
             {
-                return this.Information.GetCourses();
+                return this.Remote.GetCourses();
             }
         }
 
@@ -52,7 +53,7 @@ namespace Logic
             {
                 try
                 {
-                    return this.Information.GetCourseByCourseNumber(number);
+                    return this.Remote.GetCourseByCourseNumber(number);
                 }
                 catch (Exception e)
                 {
@@ -66,7 +67,7 @@ namespace Logic
             lock (CourseLock) {
                 try
                 {
-                    return Information.GetCourseByCourseName(name);
+                    return Remote.GetCourseByCourseName(name);
 
                 }
                 catch (Exception e)
@@ -80,7 +81,7 @@ namespace Logic
         {
             lock (CourseLock)
             {
-                return this.Information.CourseExistsByName(courseName);
+                return this.Remote.CourseExistsByName(courseName);
             }
         }
         public void DeleteCourse(int courseIndex)
@@ -89,7 +90,7 @@ namespace Logic
             {
                 try
                 {
-                    this.Information.DeleteCourse(courseIndex);
+                    this.Remote.DeleteCourse(courseIndex);
                 }
                 catch (Exception e)
                 {
@@ -99,13 +100,13 @@ namespace Logic
         }
         public bool existsStudentsAndCourses()
         {
-            return this.Information.existsStudentsAndCourses();
+            return this.Remote.existsStudentsAndCourses();
         }
         public void AddStudentToCourse(StudentCourse studentCourse)
         {
             lock (StudentCourseLock)
             {
-                this.Information.AddStudentCourse(studentCourse);
+                this.Remote.AddStudentCourse(studentCourse);
             }
         }
 
@@ -113,7 +114,7 @@ namespace Logic
         {
             lock (StudentCourseLock)
             {
-                var studentCourses = Information.GetStudentCourses().Where(x => x.Student == student).ToList();
+                var studentCourses = Remote.GetStudentCourses().Where(x => x.Student.StudentNum == student.StudentNum).ToList();
                 var coursesOfStudent = new List<Course>();
                 foreach (var item in studentCourses)
                 {
@@ -122,7 +123,16 @@ namespace Logic
 
                 var allCourses = GetCourses();
 
-                return allCourses.Except(coursesOfStudent).ToList();
+                List<Course> difCourses = new List<Course>();
+                foreach (var item in allCourses)
+                {
+                    if (coursesOfStudent.Find(x => x.CourseNum == item.CourseNum) == null)
+                    {
+                        difCourses.Add(item);
+                    }
+                }
+
+                return difCourses;
             }
 
         }
@@ -131,7 +141,7 @@ namespace Logic
         {
             lock (StudentCourseLock)
             {
-                var studentCourses = Information.GetStudentCourses().Where(x => x.Student == student).ToList();
+                var studentCourses = Remote.GetStudentCourses().Where(x => x.Student.StudentNum == student.StudentNum).ToList();
                 var listToReturn = new List<Course>();
                 foreach (var item in studentCourses)
                 {
@@ -147,7 +157,7 @@ namespace Logic
             {
                 var listToReturn = new List<String>();
                 var coursesOfStudent = new List<Course>();
-                var studentCourses = Information.GetStudentCourses().Where(x => x.Student == student).ToList();
+                var studentCourses = Remote.GetStudentCourses().Where(x => x.Student.StudentNum == student.StudentNum).ToList();
                 foreach (var item in studentCourses)
                 {
                     coursesOfStudent.Add(item.Course);
@@ -159,7 +169,16 @@ namespace Logic
 
                 var allCourses = GetCourses();
 
-                foreach(var item in allCourses.Except(coursesOfStudent).ToList())
+                List<Course> difCourses = new List<Course>();
+                foreach (var item in allCourses)
+                {
+                    if (coursesOfStudent.Find(x => x.CourseNum == item.CourseNum) == null)
+                    {
+                        difCourses.Add(item);
+                    }
+                }
+
+                foreach(var item in difCourses)
                 {
                     var courseName = item.Name;
                     var state = "No anotado";
@@ -173,7 +192,7 @@ namespace Logic
         public int GetGradeOfCourse(StudentCourse studentCourse)
         {
             int totalGrade = 0;
-            var files = Information.GetStudentCourseFiles(studentCourse);
+            var files = Remote.GetStudentCourseFiles(studentCourse);
             foreach(var item in files)
             {
                 totalGrade += item.Grade;

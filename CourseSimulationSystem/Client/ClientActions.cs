@@ -24,14 +24,16 @@ namespace Client
 
         public bool Login()
         {
+            
             var studentNum = studentLogic.setName("Ingrese su numero de usuario o mail");
             var studentPassword = studentLogic.setName("Ingrese su contraseña");
 
             var data = studentNum + ";" + studentPassword;
-
+            
             Message.SendMessage(networkStream, "REQ", 01, data);
 
             var protocolPackageResponse = Message.ReceiveMessage(networkStream);
+          
             var loginResponse = protocolPackageResponse.Data;
             Console.WriteLine(protocolPackageResponse.Data);
 

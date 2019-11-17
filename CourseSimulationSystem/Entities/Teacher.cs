@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace Entities
 {
+    [Serializable]
     public class Teacher
     {
+        public string TeacherNum { get; set; }
         public string Name { get; set; }
         public string SurName { get; set; }
         public string Mail { get; set; }
