@@ -1,5 +1,7 @@
 ﻿using Entities;
 using Logic;
+using RemoteService;
+using RemoteServiceInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,24 +14,29 @@ namespace LogsAPI.Controllers
     public class LogsController : ApiController
     {
         private QueueLogic ql { get; set; }
+        private QueueLogic queueLogic { get; set; }
+
+        public LogsController()
+        {
+            String routeLog = System.Configuration.ConfigurationManager.AppSettings["routeLog"];
+            var queuePath = @"FormatName:Direct=TCP:" + routeLog;
+            //var queuePath = @"FormatName:Direct=TCP:192.168.1.6\Private$\logqueue";
+
+            queueLogic = new QueueLogic(queuePath);
+        }
 
         // GET api/logs
         public IHttpActionResult Get(int type)
         {
-            var queuePath = @"FormatName:Direct=TCP:192.168.1.148\Private$\logqueue";
-            QueueLogic queueLogic = new QueueLogic(queuePath);
-            ICollection<Log> returnLogs = queueLogic.GetLogsByType(type);
+
+            String remoteRoute = System.Configuration.ConfigurationManager.AppSettings["remoteRoute"];
+            IRemote Remote = (IRemote)Activator.GetObject(
+                        typeof(IRemote),
+                        "tcp://" + remoteRoute);
+
+            ICollection<Log> returnLogs = queueLogic.GetLogsByType(type, Remote);
 
             List<String> listLogs = new List<String>();
-            //foreach (var log in listLogs)
-            //{
-            //    var logModel = new LogModel()
-            //    {
-            //        Type= log.Type,
-            //        Description= log.Description
-            //    };
-            //    listLogs.Add(logModel);
-            //}
 
             foreach (var msj in returnLogs)
             {

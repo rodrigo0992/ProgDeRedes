@@ -1,4 +1,5 @@
 ﻿using Entities;
+using RemoteServiceInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,12 +12,10 @@ namespace Logic
     public class QueueLogic
     {
         MessageQueue mq;
-        List<Log> historyLog;
 
         public QueueLogic(String queuePath)
         {
-            this.mq = new MessageQueue(queuePath);
-            this.historyLog = new List<Log>();
+            this.mq = new MessageQueue(queuePath);          
         }
 
         public void AddToQueue(String type,String description)
@@ -45,8 +44,9 @@ namespace Logic
             }
         }
 
-        public List<Log> GetLogsByType(int type)
+        public List<Log> GetLogsByType(int type, IRemote remote)
         {
+            
             using (mq)
             {
                 var msgEnumerator = mq.GetMessageEnumerator2();
@@ -55,9 +55,10 @@ namespace Logic
                     mq.Formatter = new XmlMessageFormatter(new Type[] { typeof(Log) });
                     var msg = mq.ReceiveById(msgEnumerator.Current.Id, new TimeSpan(0, 0, 1));
                     var log = (Log)msg.Body;
-                    historyLog.Add(log);
+                    remote.AddLog(log);
                 }
 
+                List<Log> historyLog = remote.GetHistoryLog();
                 var messagesToReturn = new List<Log>();
                 foreach (var item in historyLog)
                 {

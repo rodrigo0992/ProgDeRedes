@@ -200,24 +200,32 @@ namespace Server
                 "Remote",
                 WellKnownObjectMode.Singleton);
 
+            string ip = ConfigurationManager.AppSettings["ip"];
+            int RemotePort = Convert.ToInt32(ConfigurationManager.AppSettings["portRemote"]);
+
             var remote = (IRemote)Activator.GetObject(
                 typeof(IRemote),
-                "tcp://127.0.0.1:7000/Remote");
+                "tcp://" + ip + ":" + RemotePort + "/Remote");
+
+            String routeLog = ConfigurationManager.AppSettings["routeLog"];
+           var queuePath = @"FormatName:Direct=TCP:" + routeLog;
+           // var queuePath = @".\private$\logQueue";
+            remote.setMSMQ(routeLog);
 
             return remote;
         }
 
         private static QueueLogic CreateMessageQueue()
         {
-            var queuePath = @".\private$\logQueue";
-            //@"FormatName:Direct=TCP:192.168.1.152\Private$\logqueue"
-
-            QueueLogic ql = new QueueLogic(queuePath);
+            //var queuePath = @".\private$\logQueue";
+            String routeLog = ConfigurationManager.AppSettings["routeLog"];
+           // var queuePath = @"FormatName:Direct=TCP:" + routeLog;
+            QueueLogic ql = new QueueLogic(routeLog);
 
             List<Log> historyLog = new List<Log>();
-            if (!MessageQueue.Exists(queuePath))
+            if (!MessageQueue.Exists(routeLog))
             {
-                MessageQueue.Create(queuePath);
+                MessageQueue.Create(routeLog);
             }
             return ql;
         }

@@ -192,6 +192,7 @@
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\CollectionModelDescription.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\DisplayTemplates\ApiGroup.cshtml" />
     <Content Include="Areas\HelpPage\Views\Help\Api.cshtml" />
+    <None Include="Properties\PublishProfiles\CustomProfile.pubxml" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
     <Content Include="Scripts\jquery-3.3.1.min.js" />
@@ -254,6 +255,14 @@
     <ProjectReference Include="..\Logic\Logic.csproj">
       <Project>{a23b69a8-8a44-48be-8c6e-6337dcab49b4}</Project>
       <Name>Logic</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RemoteServiceInterfaces\RemoteServiceInterfaces.csproj">
+      <Project>{f4da05af-b10b-4e40-a084-ac3234cbacd3}</Project>
+      <Name>RemoteServiceInterfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\RemoteService\RemoteService.csproj">
+      <Project>{04BDD00A-43EE-4879-8ED0-889EC06BD37C}</Project>
+      <Name>RemoteService</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

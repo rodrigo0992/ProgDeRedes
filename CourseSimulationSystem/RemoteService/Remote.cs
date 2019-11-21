@@ -19,6 +19,7 @@ namespace RemoteService
         public List<Teacher> Teachers { get; set; }
         public Boolean LoggedTeacher { get; set; }
         public QueueLogic queueLogic { get; set; }
+        public List<Log> historyLog { get; set; }
 
         public Remote()
         {
@@ -27,8 +28,12 @@ namespace RemoteService
             StudentCourses = new List<StudentCourse>();
             StudentConections = new List<StudentSocket>();
             Teachers = new List<Teacher>();
+            historyLog = new List<Log>();
             LoggedTeacher = false;
-            var queuePath = @"FormatName:Direct=TCP:192.168.1.152\Private$\logqueue";
+        }
+
+        public void setMSMQ(String queuePath)
+        {
             queueLogic = new QueueLogic(queuePath);
         }
 
@@ -388,6 +393,16 @@ namespace RemoteService
             {
                 throw new Exception("No se pudo agregar el archivo");
             }
+        }
+
+        public void AddLog(Log log)
+        {
+            historyLog.Add(log);
+        }
+
+        public List<Log> GetHistoryLog()
+        {
+            return historyLog;
         }
 
     }

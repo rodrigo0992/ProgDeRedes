@@ -16,9 +16,10 @@ namespace CourseAPI.Controllers
 
         public TeachersController()
         {
+            String remoteRoute = System.Configuration.ConfigurationManager.AppSettings["remoteRoute"];
             Remote = (IRemote)Activator.GetObject(
                         typeof(IRemote),
-                        "tcp://127.0.0.1:7000/Remote");
+                        "tcp://" + remoteRoute);
         }
 
         // GET api/teachers

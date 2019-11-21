@@ -40,5 +40,8 @@ namespace RemoteServiceInterfaces
         ICollection<String> GetStudentCourseFilesWithoutGrade();
         void AssignGradeByNums(int studentNum, int courseNum, string fileName, int Grade);
         void AddStudentCourseFile(Student student, Course course, File file);
+        void setMSMQ(String queuePath);
+        void AddLog(Log log);
+        List<Log> GetHistoryLog();
     }
 }
